@@ -8,7 +8,7 @@ type BtoBet interface {
 	CustomerLogin(ctx context.Context, loginRequest LoginRequest) (*LoginResponse, error)
 	GetCustomerDetails(ctx context.Context, mobile string) (*CustomerDetails, error)
 	AddPaymentAccount(ctx context.Context, mobile string) error
-	WithdrawFromWallet(ctx context.Context, mobile, slipID, callbackURL string, amount int) error
+	WithdrawFromWallet(ctx context.Context, mobile, callbackURL string, amount int) error
 	PlaceBet(ctx context.Context, betSlip BetSlipRequest) (*BetSlipResponse, error)
 	CheckBetSlip(ctx context.Context, mobile, slipID string) (*BetStatusResponse, error)
 }
