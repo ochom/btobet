@@ -1,0 +1,12 @@
+package btobet
+
+const (
+	registerCustomerURL   = "https://api-bo-stm04.btobet.games/Services/GamingPortalService.svc/CustomerCreateAccountV4"
+	loginURL              = "https://api-bo-stm04.btobet.games/Services/GamingPortalService.svc/CustomerLoginAccountV2"
+	getCustomerDetailsURL = "https://api-bo-stm04.btobet.games/Services/GamingPortalService.svc/CustomerGetDetailsAlternativeV2"
+	addPaymentAccountURL  = "https://api-bo-stm04.btobet.games/Services/GamingPortalService.svc/CustomerAddPaymentAccountsV2"
+	getCustomerBonusesURL = "https://api-bo-stm04.btobet.games/Services/GamingPortalService.svc/BonusGetCurrentBonusesForCustomer"
+	withdrawURL           = "https://payment-bo-stm04.btobet.games/Services/PosPayment.svc/AgentWithdrawalProcessV3"
+	placeBetURL           = "https://sports-stm04.btobet.games/rest/smsbetting/place"
+	checkSlipURL          = "https://sports-stm04.btobet.games/rest/smsbetting/CheckBetSlip?mobile=%s&betslipid=%s"
+)
