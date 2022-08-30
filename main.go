@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 
@@ -162,8 +163,8 @@ func (s *impl) GetCustomerDetails(ctx context.Context, mobile string) (*Customer
 	}
 
 	data := map[string]string{
-		"apiKey": s.paymentAPIKey,
-		"mobile": mobile,
+		"apiKey":      s.paymentAPIKey,
+		"phoneNumber": mobile,
 	}
 
 	body, err := json.Marshal(data)
@@ -197,6 +198,10 @@ func (s *impl) AddPaymentAccount(ctx context.Context, mobile string) error {
 		return err
 	}
 
+	if !customer.IsSuccessful {
+		return fmt.Errorf("customer not registered: %s", customer.Errors[0].Description)
+	}
+
 	data := map[string]any{
 		"apiKey":     s.paymentAPIKey,
 		"internalID": customer.Customer.Account.InternalID,
@@ -225,7 +230,8 @@ func (s *impl) AddPaymentAccount(ctx context.Context, mobile string) error {
 	}
 
 	if status != http.StatusOK {
-		return fmt.Errorf("adding payment account failed status: %d error: %s", status, string(res))
+		log.Println(string(res))
+		return fmt.Errorf("adding payment account failed status: %d", status)
 	}
 
 	return nil
