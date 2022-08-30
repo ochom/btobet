@@ -128,6 +128,7 @@ func (s *impl) GetCustomerDetails(ctx context.Context, mobile string) (*Customer
 		"Authorization": fmt.Sprintf("Basic %s", s.paymentAPIKey),
 		"Content-Type":  "application/json",
 	}
+
 	data := map[string]string{
 		"apiKey": s.paymentAPIKey,
 		"mobile": mobile,

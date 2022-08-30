@@ -27,7 +27,7 @@ type LoginResponse struct {
 
 //CustomerDetails response from bto bet
 type CustomerDetails struct {
-	Errors       Error
+	Errors       []Error
 	IsSuccessful bool
 	Customer     Customer
 }
