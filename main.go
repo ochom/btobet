@@ -23,13 +23,14 @@ type BtoBet interface {
 }
 
 // New ...
-func New(timeout time.Duration, pu, pp, pa, bi string) BtoBet {
+func New(timeout time.Duration, pu, pp, pa, bi string, pmi int) BtoBet {
 	return &impl{
 		http:            gohttp.New(timeout),
 		paymentUsername: pu,
 		paymentPassword: pp,
 		paymentAPIKey:   pa,
 		btobetID:        bi,
+		paymentMethodID: pmi,
 	}
 }
 
@@ -39,6 +40,7 @@ type impl struct {
 	paymentPassword string
 	paymentAPIKey   string
 	btobetID        string
+	paymentMethodID int
 }
 
 // RegisterUser ...
@@ -209,7 +211,7 @@ func (s *impl) AddPaymentAccount(ctx context.Context, mobile string) error {
 			{
 				"AccountReference": mobile,
 				"HolderName":       mobile,
-				"PaymentMethodID":  1,
+				"PaymentMethodID":  s.paymentMethodID,
 			},
 		},
 	}
