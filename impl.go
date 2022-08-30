@@ -200,7 +200,7 @@ func (s *impl) AddPaymentAccount(ctx context.Context, mobile string) error {
 }
 
 //WithdrawFromWallet ...
-func (s *impl) WithdrawFromWallet(ctx context.Context, mobile, slipID, callbackURL string, amount int) error {
+func (s *impl) WithdrawFromWallet(ctx context.Context, mobile, callbackURL string, amount int) error {
 	err := s.AddPaymentAccount(ctx, mobile)
 	if err != nil {
 		return err
