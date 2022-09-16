@@ -9,4 +9,5 @@ const (
 	withdrawURL           = "https://payment-bo-stm04.btobet.games/Services/PosPayment.svc/AgentWithdrawalProcessV3"
 	placeBetURL           = "https://sports-stm04.btobet.games/rest/smsbetting/place"
 	checkSlipURL          = "https://sports-stm04.btobet.games/rest/smsbetting/CheckBetSlip?mobile=%s&betslipid=%s"
+	getMarketsURL         = "https://sports-stm04.btobet.games/rest/smsbetting/GetMarkets?mobile=%s&eventCode=%s&marketCode=%s"
 )

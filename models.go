@@ -78,3 +78,15 @@ type BetStatusResponse struct {
 	PotentialWin map[string]any `json:"PotentialWin,omitempty"`
 	Status       string         `json:"Status,omitempty"`
 }
+
+// MarketResponse ...
+type MarketResponse struct {
+	EventCode       int    `json:"EventCode,omitempty"`
+	ResponseCode    int    `json:"ResponseCode,omitempty"`
+	ResponseMessage string `json:"ResponseMessage,omitempty"`
+	Outcomes        []struct {
+		Outcome   string  `json:"Outcome,omitempty"`
+		Odd       float32 `json:"Odd,omitempty"`
+		ShortCode string  `json:"ShortCode,omitempty"`
+	} `json:"Outcomes,omitempty"`
+}

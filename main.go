@@ -20,6 +20,7 @@ type BtoBet interface {
 	WithdrawFromWallet(ctx context.Context, mobile, callbackURL string, amount int) error
 	PlaceBet(ctx context.Context, betSlip BetSlipRequest) (*BetSlipResponse, error)
 	CheckBetSlip(ctx context.Context, mobile, slipID string) (*BetStatusResponse, error)
+	GetMarkets(ctx context.Context, mobile, eventCode, marketCode string) (*MarketResponse, error)
 }
 
 // New ...
@@ -331,6 +332,31 @@ func (s *impl) CheckBetSlip(ctx context.Context, mobile, slipID string) (*BetSta
 	}
 
 	var data BetStatusResponse
+	if err = json.Unmarshal(res, &data); err != nil {
+		return nil, err
+	}
+
+	return &data, nil
+}
+
+// GetMarkets ...
+func (s *impl) GetMarkets(ctx context.Context, mobile, eventCode, marketCode string) (*MarketResponse, error) {
+	headers := map[string]string{
+		"X-API-Key": s.btobetID,
+		"Accept":    "application/json",
+	}
+
+	url := fmt.Sprintf(getMarketsURL, mobile, eventCode, marketCode)
+	status, res, err := s.http.Get(ctx, url, headers)
+	if err != nil {
+		return nil, err
+	}
+
+	if status != http.StatusOK {
+		return nil, fmt.Errorf("request failed status %v", status)
+	}
+
+	var data MarketResponse
 	if err = json.Unmarshal(res, &data); err != nil {
 		return nil, err
 	}
