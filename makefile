@@ -1,4 +1,11 @@
-SHELL=/bin/bash
-
 test:
-	source env.sh && go test -v ./...
+	@echo "Testing ..."
+	go test -v -coverprofile=coverage.out ./...
+
+lint:
+	@echo "Linting ..."
+	@golangci-lint run -v
+
+tidy:
+	@echo "Tyding up ..."
+	@go mod tidy

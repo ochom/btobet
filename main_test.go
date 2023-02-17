@@ -5,14 +5,10 @@ import (
 	"os"
 	"reflect"
 	"testing"
-	"time"
-
-	gohttp "github.com/ochom/go-http"
 )
 
 func Test_impl_AddPaymentAccount(t *testing.T) {
 	s := &impl{
-		http:            gohttp.New(time.Second * 30),
 		paymentUsername: os.Getenv("PAYMENTS_USERNAME"),
 		paymentPassword: os.Getenv("PAYMENTS_PASSWORD"),
 		paymentAPIKey:   os.Getenv("PAYMENTS_API_KEY"),
@@ -56,7 +52,6 @@ func Test_impl_AddPaymentAccount(t *testing.T) {
 
 func Test_impl_GetCustomerDetails(t *testing.T) {
 	s := &impl{
-		http:            gohttp.New(time.Second * 30),
 		paymentUsername: os.Getenv("PAYMENTS_USERNAME"),
 		paymentPassword: os.Getenv("PAYMENTS_PASSWORD"),
 		paymentAPIKey:   os.Getenv("PAYMENTS_API_KEY"),
@@ -98,7 +93,6 @@ func Test_impl_GetCustomerDetails(t *testing.T) {
 
 func Test_impl_GetMarkets(t *testing.T) {
 	s := &impl{
-		http:            gohttp.New(time.Second * 30),
 		paymentUsername: os.Getenv("PAYMENTS_USERNAME"),
 		paymentPassword: os.Getenv("PAYMENTS_PASSWORD"),
 		paymentAPIKey:   os.Getenv("PAYMENTS_API_KEY"),

@@ -8,10 +8,10 @@ import (
 	"net/http"
 	"time"
 
-	gohttp "github.com/ochom/go-http"
+	"github.com/ochom/gttp"
 )
 
-//BtoBet contains methods for bto bet
+// BtoBet contains methods for bto bet
 type BtoBet interface {
 	RegisterUser(ctx context.Context, mobile, password string) (*RegistrationResponse, error)
 	CustomerLogin(ctx context.Context, loginRequest LoginRequest) (*LoginResponse, error)
@@ -26,7 +26,6 @@ type BtoBet interface {
 // New ...
 func New(timeout time.Duration, pu, pp, pa, bi string, pmi int) BtoBet {
 	return &impl{
-		http:            gohttp.New(timeout),
 		paymentUsername: pu,
 		paymentPassword: pp,
 		paymentAPIKey:   pa,
@@ -36,7 +35,6 @@ func New(timeout time.Duration, pu, pp, pa, bi string, pmi int) BtoBet {
 }
 
 type impl struct {
-	http            gohttp.Service
 	paymentUsername string
 	paymentPassword string
 	paymentAPIKey   string
@@ -97,7 +95,7 @@ func (s *impl) RegisterUser(ctx context.Context, mobile, password string) (*Regi
 		"Authorization": fmt.Sprintf("Basic %s", s.paymentAPIKey),
 	}
 
-	status, res, err := s.http.Post(ctx, registerCustomerURL, headers, body)
+	res, status, err := gttp.NewRequest(registerCustomerURL, headers, body).Post()
 	if err != nil {
 		return nil, fmt.Errorf("http err : %v", err)
 	}
@@ -114,7 +112,7 @@ func (s *impl) RegisterUser(ctx context.Context, mobile, password string) (*Regi
 	return &resp, nil
 }
 
-//CustomerLogin ...
+// CustomerLogin ...
 func (s *impl) CustomerLogin(ctx context.Context, loginRequest LoginRequest) (*LoginResponse, error) {
 
 	headers := map[string]string{
@@ -138,7 +136,7 @@ func (s *impl) CustomerLogin(ctx context.Context, loginRequest LoginRequest) (*L
 		return nil, fmt.Errorf("json marshal err: %v", err)
 	}
 
-	status, res, err := s.http.Post(ctx, loginURL, headers, body)
+	res, status, err := gttp.NewRequest(loginURL, headers, body).Post()
 	if err != nil {
 		return nil, fmt.Errorf("http err : %v", err)
 	}
@@ -157,7 +155,7 @@ func (s *impl) CustomerLogin(ctx context.Context, loginRequest LoginRequest) (*L
 	return &loginResponse, nil
 }
 
-//GetCustomerDetails ...
+// GetCustomerDetails ...
 func (s *impl) GetCustomerDetails(ctx context.Context, mobile string) (*CustomerDetails, error) {
 
 	headers := map[string]string{
@@ -175,7 +173,7 @@ func (s *impl) GetCustomerDetails(ctx context.Context, mobile string) (*Customer
 		return nil, fmt.Errorf("json marshal err: %v", err)
 	}
 
-	status, res, err := s.http.Post(ctx, getCustomerDetailsURL, headers, body)
+	res, status, err := gttp.NewRequest(getCustomerDetailsURL, headers, body).Post()
 	if err != nil {
 		return nil, fmt.Errorf("http err : %v", err)
 	}
@@ -222,12 +220,12 @@ func (s *impl) AddPaymentAccount(ctx context.Context, mobile string) error {
 		"Content-Type":  "application/json",
 	}
 
-	payload, err := json.Marshal(data)
+	body, err := json.Marshal(data)
 	if err != nil {
 		return err
 	}
 
-	status, res, err := s.http.Post(ctx, addPaymentAccountURL, headers, payload)
+	res, status, err := gttp.NewRequest(addPaymentAccountURL, headers, body).Post()
 	if err != nil {
 		return err
 	}
@@ -240,7 +238,7 @@ func (s *impl) AddPaymentAccount(ctx context.Context, mobile string) error {
 	return nil
 }
 
-//WithdrawFromWallet ...
+// WithdrawFromWallet ...
 func (s *impl) WithdrawFromWallet(ctx context.Context, mobile, callbackURL string, amount int) error {
 	err := s.AddPaymentAccount(ctx, mobile)
 	if err != nil {
@@ -273,7 +271,7 @@ func (s *impl) WithdrawFromWallet(ctx context.Context, mobile, callbackURL strin
 		return fmt.Errorf("json marshal err: %v", err)
 	}
 
-	status, res, err := s.http.Post(ctx, withdrawURL, headers, body)
+	res, status, err := gttp.NewRequest(withdrawURL, headers, body).Post()
 	if err != nil {
 		return fmt.Errorf("http err : %v", err.Error())
 	}
@@ -285,7 +283,7 @@ func (s *impl) WithdrawFromWallet(ctx context.Context, mobile, callbackURL strin
 	return nil
 }
 
-//PlaceBet ...
+// PlaceBet ...
 func (s *impl) PlaceBet(ctx context.Context, betSlip BetSlipRequest) (*BetSlipResponse, error) {
 	headers := map[string]string{
 		"X-API-Key":    s.btobetID,
@@ -297,7 +295,7 @@ func (s *impl) PlaceBet(ctx context.Context, betSlip BetSlipRequest) (*BetSlipRe
 		return nil, fmt.Errorf("json marshal err: %v", err)
 	}
 
-	status, res, err := s.http.Post(ctx, placeBetURL, headers, body)
+	res, status, err := gttp.NewRequest(placeBetURL, headers, body).Post()
 	if err != nil {
 		return nil, fmt.Errorf("http err : %v", err)
 	}
@@ -314,7 +312,7 @@ func (s *impl) PlaceBet(ctx context.Context, betSlip BetSlipRequest) (*BetSlipRe
 	return &response, nil
 }
 
-//CheckBetSlip ...
+// CheckBetSlip ...
 func (s *impl) CheckBetSlip(ctx context.Context, mobile, slipID string) (*BetStatusResponse, error) {
 	headers := map[string]string{
 		"X-API-Key":    s.btobetID,
@@ -322,7 +320,7 @@ func (s *impl) CheckBetSlip(ctx context.Context, mobile, slipID string) (*BetSta
 	}
 
 	url := fmt.Sprintf(checkSlipURL, mobile, slipID)
-	status, res, err := s.http.Get(ctx, url, headers)
+	res, status, err := gttp.NewRequest(url, headers, nil).Get()
 	if err != nil {
 		return nil, err
 	}
@@ -347,7 +345,7 @@ func (s *impl) GetMarkets(ctx context.Context, mobile, eventCode, marketCode str
 	}
 
 	url := fmt.Sprintf(getMarketsURL, mobile, eventCode, marketCode)
-	status, res, err := s.http.Get(ctx, url, headers)
+	res, status, err := gttp.NewRequest(url, headers, nil).Get()
 	if err != nil {
 		return nil, err
 	}
