@@ -1,18 +1,17 @@
-package btobet
+package btobet_test
 
 import (
 	"context"
-	"os"
 	"reflect"
 	"testing"
+
+	"github.com/ochom/btobet"
 )
 
 func Test_impl_AddPaymentAccount(t *testing.T) {
-	s := &impl{
-		paymentUsername: os.Getenv("PAYMENTS_USERNAME"),
-		paymentPassword: os.Getenv("PAYMENTS_PASSWORD"),
-		paymentAPIKey:   os.Getenv("PAYMENTS_API_KEY"),
-		btobetID:        os.Getenv("BTOBET_ACCESS_TOKEN"),
+	s, err := btobet.New()
+	if err != nil {
+		t.Fatal(err)
 	}
 
 	type args struct {
@@ -51,12 +50,11 @@ func Test_impl_AddPaymentAccount(t *testing.T) {
 }
 
 func Test_impl_GetCustomerDetails(t *testing.T) {
-	s := &impl{
-		paymentUsername: os.Getenv("PAYMENTS_USERNAME"),
-		paymentPassword: os.Getenv("PAYMENTS_PASSWORD"),
-		paymentAPIKey:   os.Getenv("PAYMENTS_API_KEY"),
-		btobetID:        os.Getenv("BTOBET_ACCESS_TOKEN"),
+	s, err := btobet.New()
+	if err != nil {
+		t.Fatal(err)
 	}
+
 	type args struct {
 		ctx    context.Context
 		mobile string
@@ -92,12 +90,11 @@ func Test_impl_GetCustomerDetails(t *testing.T) {
 }
 
 func Test_impl_GetMarkets(t *testing.T) {
-	s := &impl{
-		paymentUsername: os.Getenv("PAYMENTS_USERNAME"),
-		paymentPassword: os.Getenv("PAYMENTS_PASSWORD"),
-		paymentAPIKey:   os.Getenv("PAYMENTS_API_KEY"),
-		btobetID:        os.Getenv("BTOBET_ACCESS_TOKEN"),
+	s, err := btobet.New()
+	if err != nil {
+		t.Fatal(err)
 	}
+
 	type args struct {
 		ctx        context.Context
 		mobile     string
@@ -107,7 +104,7 @@ func Test_impl_GetMarkets(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    *MarketResponse
+		want    *btobet.MarketResponse
 		wantErr bool
 	}{
 		{
@@ -118,7 +115,7 @@ func Test_impl_GetMarkets(t *testing.T) {
 				eventCode:  "3617",
 				marketCode: "1",
 			},
-			want: &MarketResponse{
+			want: &btobet.MarketResponse{
 				EventCode:       3617,
 				ResponseCode:    0,
 				ResponseMessage: "Success",
