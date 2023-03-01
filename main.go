@@ -1,7 +1,6 @@
 package btobet
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -55,7 +54,7 @@ func New() (*Controller, error) {
 }
 
 // RegisterUser ...
-func (c *Controller) RegisterUser(ctx context.Context, mobile, password string) (*RegistrationResponse, error) {
+func (c *Controller) RegisterUser(mobile, password string) (*RegistrationResponse, error) {
 
 	data := map[string]interface{}{
 		"customer": map[string]interface{}{
@@ -125,7 +124,7 @@ func (c *Controller) RegisterUser(ctx context.Context, mobile, password string) 
 }
 
 // CustomerLogin ...
-func (c *Controller) CustomerLogin(ctx context.Context, loginRequest LoginRequest) (*LoginResponse, error) {
+func (c *Controller) CustomerLogin(loginRequest LoginRequest) (*LoginResponse, error) {
 
 	headers := map[string]string{
 		"Authorization": fmt.Sprintf("Basic %s", c.paymentAPIKey),
@@ -168,7 +167,7 @@ func (c *Controller) CustomerLogin(ctx context.Context, loginRequest LoginReques
 }
 
 // GetCustomerDetails ...
-func (c *Controller) GetCustomerDetails(ctx context.Context, mobile string) (*CustomerDetails, error) {
+func (c *Controller) GetCustomerDetails(mobile string) (*CustomerDetails, error) {
 
 	headers := map[string]string{
 		"Authorization": fmt.Sprintf("Basic %s", c.paymentAPIKey),
@@ -205,8 +204,8 @@ func (c *Controller) GetCustomerDetails(ctx context.Context, mobile string) (*Cu
 }
 
 // AddPaymentAccount ...
-func (c *Controller) AddPaymentAccount(ctx context.Context, mobile string) error {
-	customer, err := c.GetCustomerDetails(ctx, mobile)
+func (c *Controller) AddPaymentAccount(mobile string) error {
+	customer, err := c.GetCustomerDetails(mobile)
 	if err != nil {
 		return err
 	}
@@ -251,8 +250,8 @@ func (c *Controller) AddPaymentAccount(ctx context.Context, mobile string) error
 }
 
 // WithdrawFromWallet ...
-func (c *Controller) WithdrawFromWallet(ctx context.Context, mobile, callbackURL string, amount int) error {
-	err := c.AddPaymentAccount(ctx, mobile)
+func (c *Controller) WithdrawFromWallet(mobile, callbackURL string, amount int) error {
+	err := c.AddPaymentAccount(mobile)
 	if err != nil {
 		return err
 	}
@@ -296,7 +295,7 @@ func (c *Controller) WithdrawFromWallet(ctx context.Context, mobile, callbackURL
 }
 
 // PlaceBet ...
-func (c *Controller) PlaceBet(ctx context.Context, betSlip BetSlipRequest) (*BetSlipResponse, error) {
+func (c *Controller) PlaceBet(betSlip BetSlipRequest) (*BetSlipResponse, error) {
 	headers := map[string]string{
 		"X-API-Key":    c.btobetID,
 		"Content-Type": "application/json",
@@ -325,7 +324,7 @@ func (c *Controller) PlaceBet(ctx context.Context, betSlip BetSlipRequest) (*Bet
 }
 
 // CheckBetSlip ...
-func (c *Controller) CheckBetSlip(ctx context.Context, mobile, slipID string) (*BetStatusResponse, error) {
+func (c *Controller) CheckBetSlip(mobile, slipID string) (*BetStatusResponse, error) {
 	headers := map[string]string{
 		"X-API-Key":    c.btobetID,
 		"Content-Type": "application/json",
@@ -350,13 +349,13 @@ func (c *Controller) CheckBetSlip(ctx context.Context, mobile, slipID string) (*
 }
 
 // GetMarkets ...
-func (c *Controller) GetMarkets(ctx context.Context, mobile, eventCode, marketCode string) (*MarketResponse, error) {
+func (c *Controller) GetMarkets(eventCode string) (*MarketResponse, error) {
 	headers := map[string]string{
 		"X-API-Key": c.btobetID,
 		"Accept":    "application/json",
 	}
 
-	url := fmt.Sprintf(getMarketsURL, mobile, eventCode, marketCode)
+	url := fmt.Sprintf(getMarketsURL, eventCode)
 	res, status, err := gttp.NewRequest(url, headers, nil).Get()
 	if err != nil {
 		return nil, err
