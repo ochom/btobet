@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/ochom/gttp"
+	"github.com/ochom/gutils/gttp"
 )
 
 // Controller ...
@@ -96,27 +96,22 @@ func (c *Controller) RegisterUser(mobile, password string) (*RegistrationRespons
 		"loginAccount":    "false",
 	}
 
-	body, err := json.Marshal(data)
-	if err != nil {
-		return nil, err
-	}
-
 	headers := map[string]string{
 		"Content-Type":  "application/json",
 		"Authorization": fmt.Sprintf("Basic %s", c.paymentAPIKey),
 	}
 
-	res, status, err := gttp.NewRequest(registerCustomerURL, headers, body).Post()
+	res, err := gttp.NewRequest(registerCustomerURL, headers, data).Post()
 	if err != nil {
 		return nil, fmt.Errorf("http err : %v", err)
 	}
 
-	if status != http.StatusOK {
-		return nil, fmt.Errorf("http status: %d", status)
+	if res.Status != http.StatusOK {
+		return nil, fmt.Errorf("http status: %d", res.Status)
 	}
 
 	var resp RegistrationResponse
-	if err = json.Unmarshal(res, &resp); err != nil {
+	if err = json.Unmarshal(res.Body, &resp); err != nil {
 		return nil, err
 	}
 
@@ -147,18 +142,18 @@ func (c *Controller) CustomerLogin(loginRequest LoginRequest) (*LoginResponse, e
 		return nil, fmt.Errorf("json marshal err: %v", err)
 	}
 
-	res, status, err := gttp.NewRequest(loginURL, headers, body).Post()
+	res, err := gttp.NewRequest(loginURL, headers, body).Post()
 	if err != nil {
 		return nil, fmt.Errorf("http err : %v", err)
 	}
 
-	if status != http.StatusOK {
-		return nil, fmt.Errorf("http status err: %v", status)
+	if res.Status != http.StatusOK {
+		return nil, fmt.Errorf("http status err: %v", res.Status)
 	}
 
 	var loginResponse LoginResponse
 
-	err = json.Unmarshal(res, &loginResponse)
+	err = json.Unmarshal(res.Body, &loginResponse)
 	if err != nil {
 		return nil, fmt.Errorf("json unmarshal err: %v", err)
 	}
@@ -179,23 +174,18 @@ func (c *Controller) GetCustomerDetails(mobile string) (*CustomerDetails, error)
 		"phoneNumber": mobile,
 	}
 
-	body, err := json.Marshal(data)
-	if err != nil {
-		return nil, fmt.Errorf("json marshal err: %v", err)
-	}
-
-	res, status, err := gttp.NewRequest(getCustomerDetailsURL, headers, body).Post()
+	res, err := gttp.NewRequest(getCustomerDetailsURL, headers, data).Post()
 	if err != nil {
 		return nil, fmt.Errorf("http err : %v", err)
 	}
 
-	if status != http.StatusOK {
-		return nil, fmt.Errorf("http status err: %v", status)
+	if res.Status != http.StatusOK {
+		return nil, fmt.Errorf("http status err: %v", res.Status)
 	}
 
 	var customerDetails CustomerDetails
 
-	err = json.Unmarshal(res, &customerDetails)
+	err = json.Unmarshal(res.Body, &customerDetails)
 	if err != nil {
 		return nil, fmt.Errorf("json unmarshal err: %v", err)
 	}
@@ -231,19 +221,14 @@ func (c *Controller) AddPaymentAccount(mobile string) error {
 		"Content-Type":  "application/json",
 	}
 
-	body, err := json.Marshal(data)
+	res, err := gttp.NewRequest(addPaymentAccountURL, headers, data).Post()
 	if err != nil {
 		return err
 	}
 
-	res, status, err := gttp.NewRequest(addPaymentAccountURL, headers, body).Post()
-	if err != nil {
-		return err
-	}
-
-	if status != http.StatusOK {
-		log.Println(string(res))
-		return fmt.Errorf("adding payment account failed status: %d", status)
+	if res.Status != http.StatusOK {
+		log.Println(string(res.Body))
+		return fmt.Errorf("adding payment account failed status: %d", res.Status)
 	}
 
 	return nil
@@ -277,18 +262,13 @@ func (c *Controller) WithdrawFromWallet(mobile, callbackURL string, amount int) 
 		"CallbackURL":  callbackURL,
 	}
 
-	body, err := json.Marshal(data)
-	if err != nil {
-		return fmt.Errorf("json marshal err: %v", err)
-	}
-
-	res, status, err := gttp.NewRequest(withdrawURL, headers, body).Post()
+	res, err := gttp.NewRequest(withdrawURL, headers, data).Post()
 	if err != nil {
 		return fmt.Errorf("http err : %v", err.Error())
 	}
 
-	if status != http.StatusOK {
-		return fmt.Errorf("withdrawal failed status: %d error: %s", status, string(res))
+	if res.Status != http.StatusOK {
+		return fmt.Errorf("withdrawal failed status: %d error: %s", res.Status, string(res.Body))
 	}
 
 	return nil
@@ -306,18 +286,18 @@ func (c *Controller) PlaceBet(betSlip BetSlipRequest) (*BetSlipResponse, error) 
 		return nil, fmt.Errorf("json marshal err: %v", err)
 	}
 
-	res, status, err := gttp.NewRequest(placeBetURL, headers, body).Post()
+	res, err := gttp.NewRequest(placeBetURL, headers, body).Post()
 	if err != nil {
 		return nil, fmt.Errorf("http err : %v", err)
 	}
 
-	if status != http.StatusOK {
-		return nil, fmt.Errorf("http status err: %v, %s", status, string(res))
+	if res.Status != http.StatusOK {
+		return nil, fmt.Errorf("http status err: %v, %s", res.Status, string(res.Body))
 	}
 
 	var response BetSlipResponse
 
-	if err = json.Unmarshal(res, &response); err != nil {
+	if err = json.Unmarshal(res.Body, &response); err != nil {
 		return nil, fmt.Errorf("json unmarshal err: %v", err)
 	}
 	return &response, nil
@@ -331,17 +311,17 @@ func (c *Controller) CheckBetSlip(mobile, slipID string) (*BetStatusResponse, er
 	}
 
 	url := fmt.Sprintf(checkSlipURL, mobile, slipID)
-	res, status, err := gttp.NewRequest(url, headers, nil).Get()
+	res, err := gttp.NewRequest(url, headers, nil).Get()
 	if err != nil {
 		return nil, err
 	}
 
-	if status != http.StatusOK {
-		return nil, fmt.Errorf("request failed status %v", status)
+	if res.Status != http.StatusOK {
+		return nil, fmt.Errorf("request failed status %v", res.Status)
 	}
 
 	var data BetStatusResponse
-	if err = json.Unmarshal(res, &data); err != nil {
+	if err = json.Unmarshal(res.Body, &data); err != nil {
 		return nil, err
 	}
 
@@ -356,17 +336,17 @@ func (c *Controller) GetMarkets(eventCode string) (*MarketResponse, error) {
 	}
 
 	url := fmt.Sprintf(getMarketsURL, eventCode)
-	res, status, err := gttp.NewRequest(url, headers, nil).Get()
+	res, err := gttp.NewRequest(url, headers, nil).Get()
 	if err != nil {
 		return nil, err
 	}
 
-	if status != http.StatusOK {
-		return nil, fmt.Errorf("request failed status %v", status)
+	if res.Status != http.StatusOK {
+		return nil, fmt.Errorf("request failed status %v", res.Status)
 	}
 
 	var data MarketResponse
-	if err = json.Unmarshal(res, &data); err != nil {
+	if err = json.Unmarshal(res.Body, &data); err != nil {
 		return nil, err
 	}
 
