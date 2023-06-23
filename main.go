@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/ochom/gutils/gttp"
+	"github.com/ochom/gutils/helpers"
 )
 
 // Controller ...
@@ -53,8 +54,23 @@ func New() (*Controller, error) {
 	}, nil
 }
 
+func parseMobile(s string) (string, error) {
+	mobile := helpers.ParseMobile(s)
+	if mobile == "" {
+		return "", fmt.Errorf("invalid mobile number")
+	}
+
+	// replace 254 with 0
+	mobile = fmt.Sprintf("0%s", mobile[3:])
+	return mobile, nil
+}
+
 // RegisterUser ...
 func (c *Controller) RegisterUser(mobile, password string) (*RegistrationResponse, error) {
+	mobile, err := parseMobile(mobile)
+	if err != nil {
+		return nil, err
+	}
 
 	data := map[string]interface{}{
 		"customer": map[string]interface{}{
@@ -126,8 +142,13 @@ func (c *Controller) CustomerLogin(loginRequest LoginRequest) (*LoginResponse, e
 		"Content-Type":  "application/json",
 	}
 
+	mobile, err := parseMobile(loginRequest.Username)
+	if err != nil {
+		return nil, err
+	}
+
 	data := map[string]string{
-		"login":                   loginRequest.Username,
+		"login":                   mobile,
 		"password":                loginRequest.Password,
 		"ipAddress":               loginRequest.IPaddress,
 		"returnBalance":           "false",
@@ -163,6 +184,10 @@ func (c *Controller) CustomerLogin(loginRequest LoginRequest) (*LoginResponse, e
 
 // GetCustomerDetails ...
 func (c *Controller) GetCustomerDetails(mobile string) (*CustomerDetails, error) {
+	mobile, err := parseMobile(mobile)
+	if err != nil {
+		return nil, err
+	}
 
 	headers := map[string]string{
 		"Authorization": fmt.Sprintf("Basic %s", c.paymentAPIKey),
@@ -195,6 +220,11 @@ func (c *Controller) GetCustomerDetails(mobile string) (*CustomerDetails, error)
 
 // AddPaymentAccount ...
 func (c *Controller) AddPaymentAccount(mobile string) error {
+	mobile, err := parseMobile(mobile)
+	if err != nil {
+		return err
+	}
+
 	customer, err := c.GetCustomerDetails(mobile)
 	if err != nil {
 		return err
@@ -236,8 +266,12 @@ func (c *Controller) AddPaymentAccount(mobile string) error {
 
 // WithdrawFromWallet ...
 func (c *Controller) WithdrawFromWallet(mobile, callbackURL string, amount int) error {
-	err := c.AddPaymentAccount(mobile)
+	mobile, err := parseMobile(mobile)
 	if err != nil {
+		return err
+	}
+
+	if err := c.AddPaymentAccount(mobile); err != nil {
 		return err
 	}
 
@@ -281,6 +315,12 @@ func (c *Controller) PlaceBet(betSlip BetSlipRequest) (*BetSlipResponse, error) 
 		"Content-Type": "application/json",
 	}
 
+	mobile, err := parseMobile(betSlip.Mobile)
+	if err != nil {
+		return nil, err
+	}
+
+	betSlip.Mobile = mobile
 	body, err := json.Marshal(betSlip)
 	if err != nil {
 		return nil, fmt.Errorf("json marshal err: %v", err)
@@ -305,6 +345,11 @@ func (c *Controller) PlaceBet(betSlip BetSlipRequest) (*BetSlipResponse, error) 
 
 // CheckBetSlip ...
 func (c *Controller) CheckBetSlip(mobile, slipID string) (*BetStatusResponse, error) {
+	mobile, err := parseMobile(mobile)
+	if err != nil {
+		return nil, err
+	}
+
 	headers := map[string]string{
 		"X-API-Key":    c.btobetID,
 		"Content-Type": "application/json",
