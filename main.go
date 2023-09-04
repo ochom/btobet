@@ -49,9 +49,9 @@ func wrapRequest(url string, headers map[string]string, payload any) (*gttp.Resp
 		"url":     url,
 	}
 
+	fmt.Printf("register user: %+v\n", printable)
 	res, err := gttp.NewRequest(url, headers, payload).Post()
 	if err != nil {
-		fmt.Printf("register user: %+v\n", printable)
 		return nil, fmt.Errorf("http err : %v", err)
 	}
 
