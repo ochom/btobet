@@ -3,7 +3,6 @@ package btobet
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"time"
 
@@ -22,35 +21,12 @@ type Controller struct {
 
 // New ...
 func New() (*Controller, error) {
-	paymentUsername, err := GetEnv("PAYMENTS_USERNAME")
-	if err != nil {
-		return nil, err
-	}
-
-	paymentPassword, err := GetEnv("PAYMENTS_PASSWORD")
-	if err != nil {
-		return nil, err
-	}
-
-	paymentAPIKey, err := GetEnv("PAYMENTS_API_KEY")
-	if err != nil {
-		return nil, err
-	}
-	btobetID, err := GetEnv("BTOBET_ACCESS_TOKEN")
-	if err != nil {
-		return nil, err
-	}
-	paymentMethodID, err := GetIntEnv("PAYMENT_METHOD_ID")
-	if err != nil {
-		return nil, err
-	}
-
 	return &Controller{
-		paymentUsername: paymentUsername,
-		paymentPassword: paymentPassword,
-		paymentAPIKey:   paymentAPIKey,
-		btobetID:        btobetID,
-		paymentMethodID: paymentMethodID,
+		paymentUsername: helpers.GetEnv("PAYMENTS_USERNAME", ""),
+		paymentPassword: helpers.GetEnv("PAYMENTS_PASSWORD", ""),
+		paymentAPIKey:   helpers.GetEnv("PAYMENTS_API_KEY", ""),
+		btobetID:        helpers.GetEnv("BTOBET_ACCESS_TOKEN", ""),
+		paymentMethodID: helpers.GetEnvInt("PAYMENT_METHOD_ID", 0),
 	}, nil
 }
 
@@ -65,6 +41,23 @@ func parseMobile(s string) (string, error) {
 	return mobile, nil
 }
 
+// wrapRequest ...
+func wrapRequest(url string, headers map[string]string, payload any) (*gttp.Response, error) {
+	printable := map[string]interface{}{
+		"headers": headers,
+		"payload": payload,
+		"url":     url,
+	}
+	fmt.Printf("register user: %+v\n", printable)
+
+	res, err := gttp.NewRequest(url, headers, payload).Post()
+	if err != nil {
+		return nil, fmt.Errorf("http err : %v", err)
+	}
+
+	return res, nil
+}
+
 // RegisterUser ...
 func (c *Controller) RegisterUser(mobile, password string) (*RegistrationResponse, error) {
 	mobile, err := parseMobile(mobile)
@@ -72,7 +65,7 @@ func (c *Controller) RegisterUser(mobile, password string) (*RegistrationRespons
 		return nil, err
 	}
 
-	data := map[string]interface{}{
+	payload := map[string]interface{}{
 		"customer": map[string]interface{}{
 			"PreferredNotificationType": 1,
 			"CustomerV3": map[string]interface{}{
@@ -117,7 +110,7 @@ func (c *Controller) RegisterUser(mobile, password string) (*RegistrationRespons
 		"Authorization": fmt.Sprintf("Basic %s", c.paymentAPIKey),
 	}
 
-	res, err := gttp.NewRequest(registerCustomerURL, headers, data).Post()
+	res, err := wrapRequest(registerCustomerURL, headers, payload)
 	if err != nil {
 		return nil, fmt.Errorf("http err : %v", err)
 	}
@@ -126,17 +119,16 @@ func (c *Controller) RegisterUser(mobile, password string) (*RegistrationRespons
 		return nil, fmt.Errorf("http status: %d", res.Status)
 	}
 
-	var resp RegistrationResponse
-	if err = json.Unmarshal(res.Body, &resp); err != nil {
+	var data RegistrationResponse
+	if err = json.Unmarshal(res.Body, &data); err != nil {
 		return nil, err
 	}
 
-	return &resp, nil
+	return &data, nil
 }
 
 // CustomerLogin ...
 func (c *Controller) CustomerLogin(loginRequest LoginRequest) (*LoginResponse, error) {
-
 	headers := map[string]string{
 		"Authorization": fmt.Sprintf("Basic %s", c.paymentAPIKey),
 		"Content-Type":  "application/json",
@@ -147,7 +139,7 @@ func (c *Controller) CustomerLogin(loginRequest LoginRequest) (*LoginResponse, e
 		return nil, err
 	}
 
-	data := map[string]string{
+	payload := map[string]string{
 		"login":                   mobile,
 		"password":                loginRequest.Password,
 		"ipAddress":               loginRequest.IPaddress,
@@ -158,12 +150,7 @@ func (c *Controller) CustomerLogin(loginRequest LoginRequest) (*LoginResponse, e
 		"apiKey":                  c.paymentAPIKey,
 	}
 
-	body, err := json.Marshal(data)
-	if err != nil {
-		return nil, fmt.Errorf("json marshal err: %v", err)
-	}
-
-	res, err := gttp.NewRequest(loginURL, headers, body).Post()
+	res, err := wrapRequest(loginURL, headers, payload)
 	if err != nil {
 		return nil, fmt.Errorf("http err : %v", err)
 	}
@@ -172,14 +159,12 @@ func (c *Controller) CustomerLogin(loginRequest LoginRequest) (*LoginResponse, e
 		return nil, fmt.Errorf("http status err: %v", res.Status)
 	}
 
-	var loginResponse LoginResponse
-
-	err = json.Unmarshal(res.Body, &loginResponse)
-	if err != nil {
+	var data LoginResponse
+	if err := json.Unmarshal(res.Body, &data); err != nil {
 		return nil, fmt.Errorf("json unmarshal err: %v", err)
 	}
 
-	return &loginResponse, nil
+	return &data, nil
 }
 
 // GetCustomerDetails ...
@@ -194,12 +179,12 @@ func (c *Controller) GetCustomerDetails(mobile string) (*CustomerDetails, error)
 		"Content-Type":  "application/json",
 	}
 
-	data := map[string]string{
+	payload := map[string]string{
 		"apiKey":      c.paymentAPIKey,
 		"phoneNumber": mobile,
 	}
 
-	res, err := gttp.NewRequest(getCustomerDetailsURL, headers, data).Post()
+	res, err := wrapRequest(getCustomerDetailsURL, headers, payload)
 	if err != nil {
 		return nil, fmt.Errorf("http err : %v", err)
 	}
@@ -208,14 +193,12 @@ func (c *Controller) GetCustomerDetails(mobile string) (*CustomerDetails, error)
 		return nil, fmt.Errorf("http status err: %v", res.Status)
 	}
 
-	var customerDetails CustomerDetails
-
-	err = json.Unmarshal(res.Body, &customerDetails)
-	if err != nil {
+	var data CustomerDetails
+	if err := json.Unmarshal(res.Body, &data); err != nil {
 		return nil, fmt.Errorf("json unmarshal err: %v", err)
 	}
 
-	return &customerDetails, nil
+	return &data, nil
 }
 
 // AddPaymentAccount ...
@@ -234,7 +217,7 @@ func (c *Controller) AddPaymentAccount(mobile string) error {
 		return fmt.Errorf("customer not registered: %s", customer.Errors[0].Description)
 	}
 
-	data := map[string]any{
+	payload := map[string]any{
 		"apiKey":     c.paymentAPIKey,
 		"internalID": customer.Customer.Account.InternalID,
 		"paymentAccounts": []map[string]any{
@@ -251,13 +234,12 @@ func (c *Controller) AddPaymentAccount(mobile string) error {
 		"Content-Type":  "application/json",
 	}
 
-	res, err := gttp.NewRequest(addPaymentAccountURL, headers, data).Post()
+	res, err := wrapRequest(addPaymentAccountURL, headers, payload)
 	if err != nil {
 		return err
 	}
 
 	if res.Status != http.StatusOK {
-		log.Println(string(res.Body))
 		return fmt.Errorf("adding payment account failed status: %d", res.Status)
 	}
 
@@ -283,8 +265,7 @@ func (c *Controller) WithdrawFromWallet(mobile, callbackURL string, amount int) 
 	}
 
 	now := time.Now().In(GetLocation()).Format("20060102150405")
-
-	data := map[string]any{
+	payload := map[string]any{
 		"PspId":        now,
 		"OrderId":      now,
 		"Currency":     "KES",
@@ -296,7 +277,7 @@ func (c *Controller) WithdrawFromWallet(mobile, callbackURL string, amount int) 
 		"CallbackURL":  callbackURL,
 	}
 
-	res, err := gttp.NewRequest(withdrawURL, headers, data).Post()
+	res, err := wrapRequest(withdrawURL, headers, payload)
 	if err != nil {
 		return fmt.Errorf("http err : %v", err.Error())
 	}
@@ -321,12 +302,8 @@ func (c *Controller) PlaceBet(betSlip BetSlipRequest) (*BetSlipResponse, error) 
 	}
 
 	betSlip.Mobile = mobile
-	body, err := json.Marshal(betSlip)
-	if err != nil {
-		return nil, fmt.Errorf("json marshal err: %v", err)
-	}
 
-	res, err := gttp.NewRequest(placeBetURL, headers, body).Post()
+	res, err := wrapRequest(withdrawURL, headers, betSlip)
 	if err != nil {
 		return nil, fmt.Errorf("http err : %v", err)
 	}
@@ -335,12 +312,11 @@ func (c *Controller) PlaceBet(betSlip BetSlipRequest) (*BetSlipResponse, error) 
 		return nil, fmt.Errorf("http status err: %v, %s", res.Status, string(res.Body))
 	}
 
-	var response BetSlipResponse
-
-	if err = json.Unmarshal(res.Body, &response); err != nil {
+	var data BetSlipResponse
+	if err := json.Unmarshal(res.Body, &data); err != nil {
 		return nil, fmt.Errorf("json unmarshal err: %v", err)
 	}
-	return &response, nil
+	return &data, nil
 }
 
 // CheckBetSlip ...
