@@ -144,8 +144,8 @@ func (c *Controller) CustomerLogin(loginRequest LoginRequest) (*LoginResponse, e
 		"password":                loginRequest.Password,
 		"ipAddress":               loginRequest.IPaddress,
 		"returnBalance":           "true",
-		"returnApplicableBonuses": "false",
-		"returnCustomerDetails":   "false",
+		"returnApplicableBonuses": "true",
+		"returnCustomerDetails":   "true",
 		"deviceType":              "Default",
 		"apiKey":                  c.paymentAPIKey,
 	}
