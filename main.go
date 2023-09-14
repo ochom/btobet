@@ -143,7 +143,7 @@ func (c *Controller) CustomerLogin(loginRequest LoginRequest) (*LoginResponse, e
 		"login":                   mobile,
 		"password":                loginRequest.Password,
 		"ipAddress":               loginRequest.IPaddress,
-		"returnBalance":           "false",
+		"returnBalance":           "true",
 		"returnApplicableBonuses": "false",
 		"returnCustomerDetails":   "false",
 		"deviceType":              "Default",
