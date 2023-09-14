@@ -49,9 +49,9 @@ func wrapRequest(url string, headers map[string]string, payload any) (*gttp.Resp
 		"url":     url,
 	}
 
+	fmt.Printf("register user: %+v\n", printable)
 	res, err := gttp.NewRequest(url, headers, payload).Post()
 	if err != nil {
-		fmt.Printf("register user: %+v\n", printable)
 		return nil, fmt.Errorf("http err : %v", err)
 	}
 
@@ -143,9 +143,9 @@ func (c *Controller) CustomerLogin(loginRequest LoginRequest) (*LoginResponse, e
 		"login":                   mobile,
 		"password":                loginRequest.Password,
 		"ipAddress":               loginRequest.IPaddress,
-		"returnBalance":           "false",
-		"returnApplicableBonuses": "false",
-		"returnCustomerDetails":   "false",
+		"returnBalance":           "true",
+		"returnApplicableBonuses": "true",
+		"returnCustomerDetails":   "true",
 		"deviceType":              "Default",
 		"apiKey":                  c.paymentAPIKey,
 	}
