@@ -3,9 +3,10 @@ package btobet
 import (
 	"encoding/base64"
 	"fmt"
-	"os"
-	"strconv"
 	"time"
+
+	"github.com/ochom/gutils/gttp"
+	"github.com/ochom/gutils/helpers"
 )
 
 // TimeZone ...
@@ -16,7 +17,7 @@ func Encode(rawString string) string {
 	return base64.StdEncoding.EncodeToString([]byte(rawString))
 }
 
-// GetLocation returns timezone in Nairobi
+// GetLocation returns time zone in Nairobi
 func GetLocation() *time.Location {
 	loc, err := time.LoadLocation(TimeZone)
 	if err != nil {
@@ -26,22 +27,30 @@ func GetLocation() *time.Location {
 	return loc
 }
 
-// GetEnv ...
-func GetEnv(key string) (string, error) {
-	if value, ok := os.LookupEnv(key); ok {
-		return value, nil
+func parseMobile(s string) (string, error) {
+	mobile := helpers.ParseMobile(s)
+	if mobile == "" {
+		return "", fmt.Errorf("invalid mobile number")
 	}
-	return "", fmt.Errorf("Environment variable %s not set", key)
+
+	// replace 254 with 0
+	mobile = fmt.Sprintf("0%s", mobile[3:])
+	return mobile, nil
 }
 
-// GetIntEnv ...
-func GetIntEnv(key string) (int, error) {
-	if value, ok := os.LookupEnv(key); ok {
-		num, err := strconv.Atoi(value)
-		if err != nil {
-			return 0, err
-		}
-		return num, nil
+// wrapRequest ...
+func wrapRequest(url string, headers map[string]string, payload any) (*gttp.Response, error) {
+	printable := map[string]interface{}{
+		"headers": headers,
+		"payload": payload,
+		"url":     url,
 	}
-	return 0, fmt.Errorf("Environment variable %s not set", key)
+
+	fmt.Printf("register user: %+v\n", printable)
+	res, err := gttp.NewRequest(url, headers, payload).Post()
+	if err != nil {
+		return nil, fmt.Errorf("http err : %v", err)
+	}
+
+	return res, nil
 }
