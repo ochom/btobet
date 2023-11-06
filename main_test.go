@@ -7,10 +7,6 @@ import (
 )
 
 func Test_impl_AddPaymentAccount(t *testing.T) {
-	s, err := btobet.New()
-	if err != nil {
-		t.Fatal(err)
-	}
 
 	type args struct {
 		mobile string
@@ -37,7 +33,7 @@ func Test_impl_AddPaymentAccount(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := s.AddPaymentAccount(tt.args.mobile); (err != nil) != tt.wantErr {
+			if err := btobet.AddPaymentAccount(tt.args.mobile); (err != nil) != tt.wantErr {
 				t.Errorf("impl.AddPaymentAccount() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
@@ -45,10 +41,6 @@ func Test_impl_AddPaymentAccount(t *testing.T) {
 }
 
 func Test_impl_GetCustomerDetails(t *testing.T) {
-	s, err := btobet.New()
-	if err != nil {
-		t.Fatal(err)
-	}
 
 	type args struct {
 		mobile string
@@ -70,7 +62,7 @@ func Test_impl_GetCustomerDetails(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := s.GetCustomerDetails(tt.args.mobile)
+			got, err := btobet.GetCustomerDetails(tt.args.mobile)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("impl.GetCustomerDetails() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -83,11 +75,6 @@ func Test_impl_GetCustomerDetails(t *testing.T) {
 }
 
 func Test_impl_GetMarkets(t *testing.T) {
-	s, err := btobet.New()
-	if err != nil {
-		t.Fatal(err)
-	}
-
 	type args struct {
 		eventCode string
 	}
@@ -108,7 +95,7 @@ func Test_impl_GetMarkets(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := s.GetMarkets(tt.args.eventCode)
+			got, err := btobet.GetMarkets(tt.args.eventCode)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("impl.GetMarkets() error = %v, wantErr %v", err, tt.wantErr)
 				return

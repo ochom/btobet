@@ -7,59 +7,10 @@ import (
 	"time"
 
 	"github.com/ochom/gutils/gttp"
-	"github.com/ochom/gutils/helpers"
 )
 
-// Controller ...
-type Controller struct {
-	paymentUsername string
-	paymentPassword string
-	paymentAPIKey   string
-	btobetID        string
-	paymentMethodID int
-}
-
-// New ...
-func New() (*Controller, error) {
-	return &Controller{
-		paymentUsername: helpers.GetEnv("PAYMENTS_USERNAME", ""),
-		paymentPassword: helpers.GetEnv("PAYMENTS_PASSWORD", ""),
-		paymentAPIKey:   helpers.GetEnv("PAYMENTS_API_KEY", ""),
-		btobetID:        helpers.GetEnv("BTOBET_ACCESS_TOKEN", ""),
-		paymentMethodID: helpers.GetEnvInt("PAYMENT_METHOD_ID", 0),
-	}, nil
-}
-
-func parseMobile(s string) (string, error) {
-	mobile := helpers.ParseMobile(s)
-	if mobile == "" {
-		return "", fmt.Errorf("invalid mobile number")
-	}
-
-	// replace 254 with 0
-	mobile = fmt.Sprintf("0%s", mobile[3:])
-	return mobile, nil
-}
-
-// wrapRequest ...
-func wrapRequest(url string, headers map[string]string, payload any) (*gttp.Response, error) {
-	printable := map[string]interface{}{
-		"headers": headers,
-		"payload": payload,
-		"url":     url,
-	}
-
-	fmt.Printf("register user: %+v\n", printable)
-	res, err := gttp.NewRequest(url, headers, payload).Post()
-	if err != nil {
-		return nil, fmt.Errorf("http err : %v", err)
-	}
-
-	return res, nil
-}
-
 // RegisterUser ...
-func (c *Controller) RegisterUser(mobile, password string) (*RegistrationResponse, error) {
+func RegisterUser(mobile, password string) (*RegistrationResponse, error) {
 	mobile, err := parseMobile(mobile)
 	if err != nil {
 		return nil, err
@@ -100,14 +51,14 @@ func (c *Controller) RegisterUser(mobile, password string) (*RegistrationRespons
 			},
 		},
 		"deviceType":      "Default",
-		"apiKey":          c.paymentAPIKey,
+		"apiKey":          paymentAPIKey,
 		"activateAccount": "true",
 		"loginAccount":    "false",
 	}
 
 	headers := map[string]string{
 		"Content-Type":  "application/json",
-		"Authorization": fmt.Sprintf("Basic %s", c.paymentAPIKey),
+		"Authorization": fmt.Sprintf("Basic %s", paymentAPIKey),
 	}
 
 	res, err := wrapRequest(registerCustomerURL, headers, payload)
@@ -128,9 +79,9 @@ func (c *Controller) RegisterUser(mobile, password string) (*RegistrationRespons
 }
 
 // CustomerLogin ...
-func (c *Controller) CustomerLogin(loginRequest LoginRequest) (*LoginResponse, error) {
+func CustomerLogin(loginRequest LoginRequest) (*LoginResponse, error) {
 	headers := map[string]string{
-		"Authorization": fmt.Sprintf("Basic %s", c.paymentAPIKey),
+		"Authorization": fmt.Sprintf("Basic %s", paymentAPIKey),
 		"Content-Type":  "application/json",
 	}
 
@@ -147,7 +98,7 @@ func (c *Controller) CustomerLogin(loginRequest LoginRequest) (*LoginResponse, e
 		"returnApplicableBonuses": "true",
 		"returnCustomerDetails":   "true",
 		"deviceType":              "Default",
-		"apiKey":                  c.paymentAPIKey,
+		"apiKey":                  paymentAPIKey,
 	}
 
 	res, err := wrapRequest(loginURL, headers, payload)
@@ -168,19 +119,19 @@ func (c *Controller) CustomerLogin(loginRequest LoginRequest) (*LoginResponse, e
 }
 
 // GetCustomerDetails ...
-func (c *Controller) GetCustomerDetails(mobile string) (*CustomerDetails, error) {
+func GetCustomerDetails(mobile string) (*CustomerDetails, error) {
 	mobile, err := parseMobile(mobile)
 	if err != nil {
 		return nil, err
 	}
 
 	headers := map[string]string{
-		"Authorization": fmt.Sprintf("Basic %s", c.paymentAPIKey),
+		"Authorization": fmt.Sprintf("Basic %s", paymentAPIKey),
 		"Content-Type":  "application/json",
 	}
 
 	payload := map[string]string{
-		"apiKey":      c.paymentAPIKey,
+		"apiKey":      paymentAPIKey,
 		"phoneNumber": mobile,
 	}
 
@@ -202,13 +153,13 @@ func (c *Controller) GetCustomerDetails(mobile string) (*CustomerDetails, error)
 }
 
 // AddPaymentAccount ...
-func (c *Controller) AddPaymentAccount(mobile string) error {
+func AddPaymentAccount(mobile string) error {
 	mobile, err := parseMobile(mobile)
 	if err != nil {
 		return err
 	}
 
-	customer, err := c.GetCustomerDetails(mobile)
+	customer, err := GetCustomerDetails(mobile)
 	if err != nil {
 		return err
 	}
@@ -218,19 +169,19 @@ func (c *Controller) AddPaymentAccount(mobile string) error {
 	}
 
 	payload := map[string]any{
-		"apiKey":     c.paymentAPIKey,
+		"apiKey":     paymentAPIKey,
 		"internalID": customer.Customer.Account.InternalID,
 		"paymentAccounts": []map[string]any{
 			{
 				"AccountReference": mobile,
 				"HolderName":       mobile,
-				"PaymentMethodID":  c.paymentMethodID,
+				"PaymentMethodID":  paymentMethodID,
 			},
 		},
 	}
 
 	headers := map[string]string{
-		"Authorization": fmt.Sprintf("Basic %s", c.paymentAPIKey),
+		"Authorization": fmt.Sprintf("Basic %s", paymentAPIKey),
 		"Content-Type":  "application/json",
 	}
 
@@ -247,17 +198,17 @@ func (c *Controller) AddPaymentAccount(mobile string) error {
 }
 
 // WithdrawFromWallet ...
-func (c *Controller) WithdrawFromWallet(mobile, callbackURL string, amount int) error {
+func WithdrawFromWallet(mobile, callbackURL string, amount int) error {
 	mobile, err := parseMobile(mobile)
 	if err != nil {
 		return err
 	}
 
-	if err := c.AddPaymentAccount(mobile); err != nil {
+	if err := AddPaymentAccount(mobile); err != nil {
 		return err
 	}
 
-	apiKey := Encode(fmt.Sprintf("%s:%s", c.paymentUsername, c.paymentPassword))
+	apiKey := Encode(fmt.Sprintf("%s:%s", paymentUsername, paymentPassword))
 
 	headers := map[string]string{
 		"Authorization": fmt.Sprintf("Basic %s", apiKey),
@@ -290,9 +241,9 @@ func (c *Controller) WithdrawFromWallet(mobile, callbackURL string, amount int) 
 }
 
 // PlaceBet ...
-func (c *Controller) PlaceBet(betSlip BetSlipRequest) (*BetSlipResponse, error) {
+func PlaceBet(betSlip BetSlipRequest) (*BetSlipResponse, error) {
 	headers := map[string]string{
-		"X-API-Key":    c.btobetID,
+		"X-API-Key":    accessToken,
 		"Content-Type": "application/json",
 	}
 
@@ -320,14 +271,14 @@ func (c *Controller) PlaceBet(betSlip BetSlipRequest) (*BetSlipResponse, error) 
 }
 
 // CheckBetSlip ...
-func (c *Controller) CheckBetSlip(mobile, slipID string) (*BetStatusResponse, error) {
+func CheckBetSlip(mobile, slipID string) (*BetStatusResponse, error) {
 	mobile, err := parseMobile(mobile)
 	if err != nil {
 		return nil, err
 	}
 
 	headers := map[string]string{
-		"X-API-Key":    c.btobetID,
+		"X-API-Key":    accessToken,
 		"Content-Type": "application/json",
 	}
 
@@ -350,9 +301,9 @@ func (c *Controller) CheckBetSlip(mobile, slipID string) (*BetStatusResponse, er
 }
 
 // GetMarkets ...
-func (c *Controller) GetMarkets(eventCode string) (*MarketResponse, error) {
+func GetMarkets(eventCode string) (*MarketResponse, error) {
 	headers := map[string]string{
-		"X-API-Key": c.btobetID,
+		"X-API-Key": accessToken,
 		"Accept":    "application/json",
 	}
 
