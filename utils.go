@@ -53,7 +53,7 @@ func wrapRequest(url string, headers map[string]string, payload any) (*gttp.Resp
 		return nil, fmt.Errorf("json err : %v", err)
 	}
 
-	fmt.Printf("b: %s\n", string(b))
+	fmt.Printf("%s\n", string(b))
 	res, err := gttp.NewRequest(url, headers, payload).Post()
 	if err != nil {
 		return nil, fmt.Errorf("http err : %v", err)
