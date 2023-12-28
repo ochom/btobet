@@ -30,6 +30,7 @@ type CustomerDetails struct {
 	Errors       []Error
 	IsSuccessful bool
 	Customer     Customer
+	Metadata     map[string]any
 }
 
 // Customer customer data

@@ -151,12 +151,19 @@ func GetCustomerDetails(mobile string) (*CustomerDetails, error) {
 		return nil, fmt.Errorf("http status err: %v", res.Status)
 	}
 
-	var data CustomerDetails
-	if err := json.Unmarshal(res.Body, &data); err != nil {
+	metaData := map[string]any{}
+	if err := json.Unmarshal(res.Body, &metaData); err != nil {
 		return nil, fmt.Errorf("json unmarshal err: %v", err)
 	}
 
-	return &data, nil
+	customer := CustomerDetails{
+		Errors:       metaData["Errors"].([]Error),
+		IsSuccessful: metaData["IsSuccessful"].(bool),
+		Customer:     metaData["Customer"].(Customer),
+		Metadata:     metaData,
+	}
+
+	return &customer, nil
 }
 
 // AddPaymentAccount ...
