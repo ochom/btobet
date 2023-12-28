@@ -297,7 +297,7 @@ func CheckBetSlip(mobile, slipID string) (*BetStatusResponse, error) {
 	}
 
 	url := fmt.Sprintf(checkSlipURL, mobile, slipID)
-	res, err := gttp.NewRequest(url, headers, nil).Get()
+	res, err := gttp.Get(url, headers)
 	if err != nil {
 		return nil, err
 	}
@@ -323,7 +323,7 @@ func GetMarkets(eventCode string) (*MarketResponse, error) {
 	}
 
 	url := fmt.Sprintf(getMarketsURL, eventCode)
-	res, err := gttp.NewRequest(url, headers, nil).Get()
+	res, err := gttp.Get(url, headers)
 	if err != nil {
 		return nil, err
 	}

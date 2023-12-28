@@ -54,7 +54,7 @@ func wrapRequest(url string, headers map[string]string, payload any) (*gttp.Resp
 	}
 
 	fmt.Printf("%s\n", string(b))
-	res, err := gttp.NewRequest(url, headers, payload).Post()
+	res, err := gttp.Post(url, headers, payload)
 	if err != nil {
 		return nil, fmt.Errorf("http err : %v", err)
 	}
