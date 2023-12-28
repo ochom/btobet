@@ -2,6 +2,7 @@ package btobet
 
 import (
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -46,8 +47,14 @@ func wrapRequest(url string, headers map[string]string, payload any) (*gttp.Resp
 		"url":     url,
 	}
 
-	fmt.Printf("register user: %+v\n", printable)
-	res, err := gttp.NewRequest(url, headers, payload).Post()
+	// print as json
+	b, err := json.MarshalIndent(printable, "", "  ")
+	if err != nil {
+		return nil, fmt.Errorf("json err : %v", err)
+	}
+
+	fmt.Printf("%s\n", string(b))
+	res, err := gttp.Post(url, headers, payload)
 	if err != nil {
 		return nil, fmt.Errorf("http err : %v", err)
 	}

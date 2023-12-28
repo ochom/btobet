@@ -1,7 +1,5 @@
 package btobet
 
-import "github.com/ochom/gutils/helpers"
-
 const (
 	registerCustomerURL   = "https://api-bo-stm04.btobet.games/Services/GamingPortalService.svc/CustomerCreateAccountV4"
 	loginURL              = "https://api-bo-stm04.btobet.games/Services/GamingPortalService.svc/CustomerLoginAccountV2"
@@ -14,10 +12,10 @@ const (
 	getMarketsURL         = "https://sports-stm04-core.btobet.games/rest/smsbetting/GetMarkets?eventCode=%s&culture=en"
 )
 
-var (
-	paymentUsername = helpers.GetEnv("PAYMENTS_USERNAME", "")
-	paymentPassword = helpers.GetEnv("PAYMENTS_PASSWORD", "")
-	paymentAPIKey   = helpers.GetEnv("PAYMENTS_API_KEY", "")
-	accessToken     = helpers.GetEnv("BTOBET_ACCESS_TOKEN", "")
-	paymentMethodID = helpers.GetEnvInt("PAYMENT_METHOD_ID", 0)
-)
+// var (
+// 	paymentUsername = helpers.GetEnv("PAYMENTS_USERNAME", "")
+// 	paymentPassword = helpers.GetEnv("PAYMENTS_PASSWORD", "")
+// 	paymentAPIKey   = helpers.GetEnv("PAYMENTS_API_KEY", "")
+// 	accessToken     = helpers.GetEnv("BTOBET_ACCESS_TOKEN", "")
+// 	paymentMethodID = helpers.GetEnvInt("PAYMENT_METHOD_ID", 0)
+// )
