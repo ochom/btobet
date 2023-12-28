@@ -7,10 +7,13 @@ import (
 	"time"
 
 	"github.com/ochom/gutils/gttp"
+	"github.com/ochom/gutils/helpers"
 )
 
 // RegisterUser ...
 func RegisterUser(mobile, password string) (*RegistrationResponse, error) {
+	paymentAPIKey := helpers.GetEnv("PAYMENTS_API_KEY", "")
+
 	mobile, err := parseMobile(mobile)
 	if err != nil {
 		return nil, err
@@ -80,6 +83,8 @@ func RegisterUser(mobile, password string) (*RegistrationResponse, error) {
 
 // CustomerLogin ...
 func CustomerLogin(loginRequest LoginRequest) (*LoginResponse, error) {
+	paymentAPIKey := helpers.GetEnv("PAYMENTS_API_KEY", "")
+
 	headers := map[string]string{
 		"Authorization": fmt.Sprintf("Basic %s", paymentAPIKey),
 		"Content-Type":  "application/json",
@@ -120,6 +125,8 @@ func CustomerLogin(loginRequest LoginRequest) (*LoginResponse, error) {
 
 // GetCustomerDetails ...
 func GetCustomerDetails(mobile string) (*CustomerDetails, error) {
+	paymentAPIKey := helpers.GetEnv("PAYMENTS_API_KEY", "")
+
 	mobile, err := parseMobile(mobile)
 	if err != nil {
 		return nil, err
@@ -154,6 +161,8 @@ func GetCustomerDetails(mobile string) (*CustomerDetails, error) {
 
 // AddPaymentAccount ...
 func AddPaymentAccount(mobile string) error {
+	paymentAPIKey := helpers.GetEnv("PAYMENTS_API_KEY", "")
+	paymentMethodID := helpers.GetEnvInt("PAYMENT_METHOD_ID", 0)
 	mobile, err := parseMobile(mobile)
 	if err != nil {
 		return err
@@ -208,6 +217,9 @@ func WithdrawFromWallet(mobile, callbackURL string, amount int) error {
 		return err
 	}
 
+	paymentUsername := helpers.GetEnv("PAYMENTS_USERNAME", "")
+	paymentPassword := helpers.GetEnv("PAYMENTS_PASSWORD", "")
+
 	apiKey := Encode(fmt.Sprintf("%s:%s", paymentUsername, paymentPassword))
 
 	headers := map[string]string{
@@ -242,6 +254,7 @@ func WithdrawFromWallet(mobile, callbackURL string, amount int) error {
 
 // PlaceBet ...
 func PlaceBet(betSlip BetSlipRequest) (*BetSlipResponse, error) {
+	accessToken := helpers.GetEnv("BTOBET_ACCESS_TOKEN", "")
 	headers := map[string]string{
 		"X-API-Key":    accessToken,
 		"Content-Type": "application/json",
@@ -272,6 +285,7 @@ func PlaceBet(betSlip BetSlipRequest) (*BetSlipResponse, error) {
 
 // CheckBetSlip ...
 func CheckBetSlip(mobile, slipID string) (*BetStatusResponse, error) {
+	accessToken := helpers.GetEnv("BTOBET_ACCESS_TOKEN", "")
 	mobile, err := parseMobile(mobile)
 	if err != nil {
 		return nil, err
@@ -302,6 +316,7 @@ func CheckBetSlip(mobile, slipID string) (*BetStatusResponse, error) {
 
 // GetMarkets ...
 func GetMarkets(eventCode string) (*MarketResponse, error) {
+	accessToken := helpers.GetEnv("BTOBET_ACCESS_TOKEN", "")
 	headers := map[string]string{
 		"X-API-Key": accessToken,
 		"Accept":    "application/json",
