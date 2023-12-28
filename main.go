@@ -151,19 +151,48 @@ func GetCustomerDetails(mobile string) (*CustomerDetails, error) {
 		return nil, fmt.Errorf("http status err: %v", res.Status)
 	}
 
-	metaData := map[string]any{}
-	if err := json.Unmarshal(res.Body, &metaData); err != nil {
+	var data CustomerDetails
+	if err := json.Unmarshal(res.Body, &data); err != nil {
 		return nil, fmt.Errorf("json unmarshal err: %v", err)
 	}
 
-	customer := CustomerDetails{
-		Errors:       metaData["Errors"].([]Error),
-		IsSuccessful: metaData["IsSuccessful"].(bool),
-		Customer:     metaData["Customer"].(Customer),
-		Metadata:     metaData,
+	return &data, nil
+}
+
+// GetCustomerMetadata ...
+func GetCustomerMetadata(mobile string) (map[string]any, error) {
+	paymentAPIKey := helpers.GetEnv("PAYMENTS_API_KEY", "")
+
+	mobile, err := parseMobile(mobile)
+	if err != nil {
+		return nil, err
 	}
 
-	return &customer, nil
+	headers := map[string]string{
+		"Authorization": fmt.Sprintf("Basic %s", paymentAPIKey),
+		"Content-Type":  "application/json",
+	}
+
+	payload := map[string]string{
+		"apiKey":      paymentAPIKey,
+		"phoneNumber": mobile,
+	}
+
+	res, err := wrapRequest(getCustomerDetailsURL, headers, payload)
+	if err != nil {
+		return nil, fmt.Errorf("http err : %v", err)
+	}
+
+	if res.Status != http.StatusOK {
+		return nil, fmt.Errorf("http status err: %v", res.Status)
+	}
+
+	var data map[string]any
+	if err := json.Unmarshal(res.Body, &data); err != nil {
+		return nil, fmt.Errorf("json unmarshal err: %v", err)
+	}
+
+	return data, nil
 }
 
 // AddPaymentAccount ...
