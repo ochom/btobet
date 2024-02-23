@@ -303,7 +303,7 @@ func PlaceBet(betSlip BetSlipRequest) (*BetSlipResponse, error) {
 
 	betSlip.Mobile = mobile
 
-	res, err := wrapRequest(withdrawURL, headers, betSlip)
+	res, err := wrapRequest(placeBetURL, headers, betSlip)
 	if err != nil {
 		return nil, fmt.Errorf("http err : %v", err)
 	}
