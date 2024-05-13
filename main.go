@@ -12,7 +12,7 @@ import (
 
 // RegisterUser ...
 func RegisterUser(mobile, password string) (*RegistrationResponse, error) {
-	paymentAPIKey := helpers.GetEnv("PAYMENTS_API_KEY", "")
+	paymentAPIKey := helpers.GetEnv("PAYMENTS_API_KEY")
 
 	mobile, err := parseMobile(mobile)
 	if err != nil {
@@ -83,7 +83,7 @@ func RegisterUser(mobile, password string) (*RegistrationResponse, error) {
 
 // CustomerLogin ...
 func CustomerLogin(loginRequest LoginRequest) (*LoginResponse, error) {
-	paymentAPIKey := helpers.GetEnv("PAYMENTS_API_KEY", "")
+	paymentAPIKey := helpers.GetEnv("PAYMENTS_API_KEY")
 
 	headers := map[string]string{
 		"Authorization": fmt.Sprintf("Basic %s", paymentAPIKey),
@@ -125,7 +125,7 @@ func CustomerLogin(loginRequest LoginRequest) (*LoginResponse, error) {
 
 // GetCustomerDetails ...
 func GetCustomerDetails(mobile string) (*CustomerDetails, error) {
-	paymentAPIKey := helpers.GetEnv("PAYMENTS_API_KEY", "")
+	paymentAPIKey := helpers.GetEnv("PAYMENTS_API_KEY")
 
 	mobile, err := parseMobile(mobile)
 	if err != nil {
@@ -161,7 +161,7 @@ func GetCustomerDetails(mobile string) (*CustomerDetails, error) {
 
 // GetCustomerMetadata ...
 func GetCustomerMetadata(mobile string) (map[string]any, error) {
-	paymentAPIKey := helpers.GetEnv("PAYMENTS_API_KEY", "")
+	paymentAPIKey := helpers.GetEnv("PAYMENTS_API_KEY")
 
 	mobile, err := parseMobile(mobile)
 	if err != nil {
@@ -197,7 +197,7 @@ func GetCustomerMetadata(mobile string) (map[string]any, error) {
 
 // AddPaymentAccount ...
 func AddPaymentAccount(mobile string) error {
-	paymentAPIKey := helpers.GetEnv("PAYMENTS_API_KEY", "")
+	paymentAPIKey := helpers.GetEnv("PAYMENTS_API_KEY")
 	paymentMethodID := helpers.GetEnvInt("PAYMENT_METHOD_ID", 0)
 	mobile, err := parseMobile(mobile)
 	if err != nil {
@@ -253,8 +253,8 @@ func WithdrawFromWallet(mobile, callbackURL string, amount int) error {
 		return err
 	}
 
-	paymentUsername := helpers.GetEnv("PAYMENTS_USERNAME", "")
-	paymentPassword := helpers.GetEnv("PAYMENTS_PASSWORD", "")
+	paymentUsername := helpers.GetEnv("PAYMENTS_USERNAME")
+	paymentPassword := helpers.GetEnv("PAYMENTS_PASSWORD")
 
 	apiKey := Encode(fmt.Sprintf("%s:%s", paymentUsername, paymentPassword))
 
@@ -290,7 +290,7 @@ func WithdrawFromWallet(mobile, callbackURL string, amount int) error {
 
 // PlaceBet ...
 func PlaceBet(betSlip BetSlipRequest) (*BetSlipResponse, error) {
-	accessToken := helpers.GetEnv("BTOBET_ACCESS_TOKEN", "")
+	accessToken := helpers.GetEnv("BTOBET_ACCESS_TOKEN")
 	headers := map[string]string{
 		"X-API-Key":    accessToken,
 		"Content-Type": "application/json",
@@ -302,7 +302,6 @@ func PlaceBet(betSlip BetSlipRequest) (*BetSlipResponse, error) {
 	}
 
 	betSlip.Mobile = mobile
-
 	res, err := wrapRequest(placeBetURL, headers, betSlip)
 	if err != nil {
 		return nil, fmt.Errorf("http err : %v", err)
@@ -312,16 +311,13 @@ func PlaceBet(betSlip BetSlipRequest) (*BetSlipResponse, error) {
 		return nil, fmt.Errorf("http status err: %v, %s", res.Status, string(res.Body))
 	}
 
-	var data BetSlipResponse
-	if err := json.Unmarshal(res.Body, &data); err != nil {
-		return nil, fmt.Errorf("json unmarshal err: %v", err)
-	}
+	data := helpers.FromJSON[BetSlipResponse](res.Body)
 	return &data, nil
 }
 
 // CheckBetSlip ...
 func CheckBetSlip(mobile, slipID string) (*BetStatusResponse, error) {
-	accessToken := helpers.GetEnv("BTOBET_ACCESS_TOKEN", "")
+	accessToken := helpers.GetEnv("BTOBET_ACCESS_TOKEN")
 	mobile, err := parseMobile(mobile)
 	if err != nil {
 		return nil, err
@@ -352,7 +348,7 @@ func CheckBetSlip(mobile, slipID string) (*BetStatusResponse, error) {
 
 // GetMarkets ...
 func GetMarkets(eventCode string) (*MarketResponse, error) {
-	accessToken := helpers.GetEnv("BTOBET_ACCESS_TOKEN", "")
+	accessToken := helpers.GetEnv("BTOBET_ACCESS_TOKEN")
 	headers := map[string]string{
 		"X-API-Key": accessToken,
 		"Accept":    "application/json",
