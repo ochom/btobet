@@ -64,7 +64,7 @@ func RegisterUser(mobile, password string) (*RegistrationResponse, error) {
 		"Authorization": fmt.Sprintf("Basic %s", paymentAPIKey),
 	}
 
-	res, err := wrapRequest(registerCustomerURL, headers, payload)
+	res, err := gttp.Post(registerCustomerURL, headers, payload)
 	if err != nil {
 		return nil, fmt.Errorf("http err : %v", err)
 	}
@@ -106,7 +106,7 @@ func CustomerLogin(loginRequest LoginRequest) (*LoginResponse, error) {
 		"apiKey":                  paymentAPIKey,
 	}
 
-	res, err := wrapRequest(loginURL, headers, payload)
+	res, err := gttp.Post(loginURL, headers, payload)
 	if err != nil {
 		return nil, fmt.Errorf("http err : %v", err)
 	}
@@ -142,7 +142,7 @@ func GetCustomerDetails(mobile string) (*CustomerDetails, error) {
 		"phoneNumber": mobile,
 	}
 
-	res, err := wrapRequest(getCustomerDetailsURL, headers, payload)
+	res, err := gttp.Post(getCustomerDetailsURL, headers, payload)
 	if err != nil {
 		return nil, fmt.Errorf("http err : %v", err)
 	}
@@ -178,7 +178,7 @@ func GetCustomerMetadata(mobile string) (map[string]any, error) {
 		"phoneNumber": mobile,
 	}
 
-	res, err := wrapRequest(getCustomerDetailsURL, headers, payload)
+	res, err := gttp.Post(getCustomerDetailsURL, headers, payload)
 	if err != nil {
 		return nil, fmt.Errorf("http err : %v", err)
 	}
@@ -230,7 +230,7 @@ func AddPaymentAccount(mobile string) error {
 		"Content-Type":  "application/json",
 	}
 
-	res, err := wrapRequest(addPaymentAccountURL, headers, payload)
+	res, err := gttp.Post(addPaymentAccountURL, headers, payload)
 	if err != nil {
 		return err
 	}
@@ -276,7 +276,7 @@ func WithdrawFromWallet(mobile, callbackURL string, amount int) error {
 		"CallbackURL":  callbackURL,
 	}
 
-	res, err := wrapRequest(withdrawURL, headers, payload)
+	res, err := gttp.Post(withdrawURL, headers, payload)
 	if err != nil {
 		return fmt.Errorf("http err : %v", err.Error())
 	}
@@ -302,7 +302,7 @@ func PlaceBet(betSlip BetSlipRequest) (*BetSlipResponse, error) {
 	}
 
 	betSlip.Mobile = mobile
-	res, err := wrapRequest(placeBetURL, headers, betSlip)
+	res, err := gttp.Post(placeBetURL, headers, betSlip)
 	if err != nil {
 		return nil, fmt.Errorf("http err : %v", err)
 	}
