@@ -33,7 +33,7 @@ func parseMobile(s string) (string, error) {
 		return "", fmt.Errorf("invalid mobile number")
 	}
 
-	mobile = strings.TrimSuffix(s, "254")
+	mobile = strings.TrimPrefix(s, "254")
 	mobile = "0" + mobile
 	return mobile, nil
 }
