@@ -28,6 +28,10 @@ func GetLocation() *time.Location {
 }
 
 func parseMobile(s string) (string, error) {
+	if strings.HasPrefix(s, "0") && len(s) == 10 {
+		return s, nil
+	}
+
 	mobile := helpers.ParseMobile(s)
 	if mobile == "" {
 		return "", fmt.Errorf("invalid mobile number")
