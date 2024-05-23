@@ -1,0 +1,116 @@
+package btobet
+
+import (
+	"fmt"
+	"net/http"
+	"time"
+
+	"github.com/ochom/gutils/gttp"
+	"github.com/ochom/gutils/helpers"
+	"github.com/ochom/gutils/logs"
+)
+
+// AddPaymentAccount ...
+func AddPaymentAccount(mobile string) error {
+	paymentAPIKey := helpers.GetEnv("PAYMENTS_API_KEY")
+	paymentMethodID := helpers.GetEnvInt("PAYMENT_METHOD_ID", 0)
+
+	mobile, err := parseMobile(mobile)
+	if err != nil {
+		logs.Error("AddPaymentAccount: error parsing mobile: %s", err.Error())
+		return err
+	}
+
+	customer, err := GetCustomerDetails(mobile)
+	if err != nil {
+		logs.Error("AddPaymentAccount: error getting customer details: %s", err.Error())
+		return err
+	}
+
+	if !customer.IsSuccessful {
+		logs.Error("AddPaymentAccount: customer not registered: %s", customer.Errors[0].Description)
+		return fmt.Errorf("customer not registered: %s", customer.Errors[0].Description)
+	}
+
+	payload := map[string]any{
+		"apiKey":     paymentAPIKey,
+		"internalID": customer.Customer.Account.InternalID,
+		"paymentAccounts": []map[string]any{
+			{
+				"AccountReference": mobile,
+				"HolderName":       mobile,
+				"PaymentMethodID":  paymentMethodID,
+			},
+		},
+	}
+
+	headers := map[string]string{
+		"Authorization": fmt.Sprintf("Basic %s", paymentAPIKey),
+		"Content-Type":  "application/json",
+	}
+
+	logs.Info("adding payment account [%s]=> %s", mobile, string(helpers.ToJSON(payload)))
+	res, err := gttp.Post(addPaymentAccountURL, headers, payload)
+	if err != nil {
+		logs.Error("AddPaymentAccount: error adding payment account: %s", err.Error())
+		return err
+	}
+
+	if res.Status != http.StatusOK {
+		logs.Error("AddPaymentAccount: error adding payment account: %s", string(res.Body))
+		return fmt.Errorf("adding payment account failed status: %d", res.Status)
+	}
+
+	return nil
+}
+
+// WithdrawFromWallet ...
+func WithdrawFromWallet(mobile, callbackURL string, amount int) error {
+	mobile, err := parseMobile(mobile)
+	if err != nil {
+		logs.Error("WithdrawFromWallet: error parsing mobile: %s", err.Error())
+		return err
+	}
+
+	if err := AddPaymentAccount(mobile); err != nil {
+		logs.Error("WithdrawFromWallet: error adding payment account: %s", err.Error())
+		return err
+	}
+
+	paymentUsername := helpers.GetEnv("PAYMENTS_USERNAME")
+	paymentPassword := helpers.GetEnv("PAYMENTS_PASSWORD")
+
+	apiKey := Encode(fmt.Sprintf("%s:%s", paymentUsername, paymentPassword))
+
+	headers := map[string]string{
+		"Authorization": fmt.Sprintf("Basic %s", apiKey),
+		"Content-Type":  "application/json",
+	}
+
+	now := time.Now().In(GetLocation()).Format("20060102150405")
+	payload := map[string]any{
+		"PspId":        now,
+		"OrderId":      now,
+		"Currency":     "KES",
+		"WithdrawalId": nil,
+		"Amount":       amount,
+		"Username":     mobile,
+		"PosId":        2331007,
+		"CashierId":    "1",
+		"CallbackURL":  callbackURL,
+	}
+
+	logs.Info("withdrawing from wallet [%s]=> %s", mobile, string(helpers.ToJSON(payload)))
+	res, err := gttp.Post(withdrawURL, headers, payload)
+	if err != nil {
+		logs.Error("WithdrawFromWallet: error withdrawing from wallet: %s", err.Error())
+		return fmt.Errorf("http err : %v", err.Error())
+	}
+
+	if res.Status != http.StatusOK {
+		logs.Error("WithdrawFromWallet: error withdrawing from wallet: %s", string(res.Body))
+		return fmt.Errorf("withdrawal failed status: %d error: %s", res.Status, string(res.Body))
+	}
+
+	return nil
+}
