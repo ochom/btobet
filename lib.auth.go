@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/ochom/gutils/env"
 	"github.com/ochom/gutils/gttp"
 	"github.com/ochom/gutils/helpers"
 	"github.com/ochom/gutils/logs"
@@ -11,7 +12,7 @@ import (
 
 // RegisterUser ...
 func RegisterUser(mobile, password string) (*RegistrationResponse, error) {
-	paymentAPIKey := helpers.GetEnv("PAYMENTS_API_KEY")
+	paymentAPIKey := env.Get("PAYMENTS_API_KEY")
 
 	mobile, err := parseMobile(mobile)
 	if err != nil {
@@ -63,7 +64,7 @@ func RegisterUser(mobile, password string) (*RegistrationResponse, error) {
 		"Authorization": fmt.Sprintf("Basic %s", paymentAPIKey),
 	}
 
-	logs.Info("registering user [%s]=> %s", mobile, string(helpers.ToJSON(payload)))
+	logs.Info("registering user [%s]=> %s", mobile, string(helpers.ToBytes(payload)))
 
 	res, err := gttp.Post(registerCustomerURL, headers, payload)
 	if err != nil {
@@ -76,13 +77,13 @@ func RegisterUser(mobile, password string) (*RegistrationResponse, error) {
 		return nil, fmt.Errorf("http status: %d", res.Status)
 	}
 
-	data := helpers.FromJSON[RegistrationResponse](res.Body)
+	data := helpers.FromBytes[RegistrationResponse](res.Body)
 	return &data, nil
 }
 
 // CustomerLogin ...
 func CustomerLogin(loginRequest LoginRequest) (*LoginResponse, error) {
-	paymentAPIKey := helpers.GetEnv("PAYMENTS_API_KEY")
+	paymentAPIKey := env.Get("PAYMENTS_API_KEY")
 
 	headers := map[string]string{
 		"Authorization": fmt.Sprintf("Basic %s", paymentAPIKey),
@@ -105,7 +106,7 @@ func CustomerLogin(loginRequest LoginRequest) (*LoginResponse, error) {
 		"apiKey":                  paymentAPIKey,
 	}
 
-	logs.Info("logging in user [%s]=> %s", mobile, string(helpers.ToJSON(payload)))
+	logs.Info("logging in user [%s]=> %s", mobile, string(helpers.ToBytes(payload)))
 
 	res, err := gttp.Post(loginURL, headers, payload)
 	if err != nil {
@@ -118,6 +119,6 @@ func CustomerLogin(loginRequest LoginRequest) (*LoginResponse, error) {
 		return nil, fmt.Errorf("http status err: %v", res.Status)
 	}
 
-	data := helpers.FromJSON[LoginResponse](res.Body)
+	data := helpers.FromBytes[LoginResponse](res.Body)
 	return &data, nil
 }

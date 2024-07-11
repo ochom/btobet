@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/ochom/gutils/env"
 	"github.com/ochom/gutils/gttp"
 	"github.com/ochom/gutils/helpers"
 	"github.com/ochom/gutils/logs"
@@ -11,7 +12,7 @@ import (
 
 // GetCustomerDetails ...
 func GetCustomerDetails(mobile string) (*CustomerDetails, error) {
-	paymentAPIKey := helpers.GetEnv("PAYMENTS_API_KEY")
+	paymentAPIKey := env.Get("PAYMENTS_API_KEY")
 
 	mobile, err := parseMobile(mobile)
 	if err != nil {
@@ -28,7 +29,7 @@ func GetCustomerDetails(mobile string) (*CustomerDetails, error) {
 		"phoneNumber": mobile,
 	}
 
-	logs.Error("getting customer details [%s]=> %s", mobile, string(helpers.ToJSON(payload)))
+	logs.Error("getting customer details [%s]=> %s", mobile, string(helpers.ToBytes(payload)))
 	res, err := gttp.Post(getCustomerDetailsURL, headers, payload)
 	if err != nil {
 		logs.Error("error getting customer details [%s]=> %s", mobile, err.Error())
@@ -40,13 +41,13 @@ func GetCustomerDetails(mobile string) (*CustomerDetails, error) {
 		return nil, fmt.Errorf("http status err: %v", res.Status)
 	}
 
-	data := helpers.FromJSON[CustomerDetails](res.Body)
+	data := helpers.FromBytes[CustomerDetails](res.Body)
 	return &data, nil
 }
 
 // GetCustomerMetadata ...
 func GetCustomerMetadata(mobile string) (map[string]any, error) {
-	paymentAPIKey := helpers.GetEnv("PAYMENTS_API_KEY")
+	paymentAPIKey := env.Get("PAYMENTS_API_KEY")
 
 	mobile, err := parseMobile(mobile)
 	if err != nil {
@@ -63,7 +64,7 @@ func GetCustomerMetadata(mobile string) (map[string]any, error) {
 		"phoneNumber": mobile,
 	}
 
-	logs.Info("getting customer metadata [%s]=> %s", mobile, string(helpers.ToJSON(payload)))
+	logs.Info("getting customer metadata [%s]=> %s", mobile, string(helpers.ToBytes(payload)))
 
 	res, err := gttp.Post(getCustomerDetailsURL, headers, payload)
 	if err != nil {
@@ -76,6 +77,6 @@ func GetCustomerMetadata(mobile string) (map[string]any, error) {
 		return nil, fmt.Errorf("http status err: %v", res.Status)
 	}
 
-	data := helpers.FromJSON[map[string]any](res.Body)
+	data := helpers.FromBytes[map[string]any](res.Body)
 	return data, nil
 }

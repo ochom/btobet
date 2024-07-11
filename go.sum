@@ -1,4 +1,6 @@
-github.com/ochom/gutils v0.8.8 h1:NFvPbnrRCniA6BZkx8D8d9gwTvryUTayAIWFQCoGqjI=
-github.com/ochom/gutils v0.8.8/go.mod h1:qehgCKpY9bGcGUn78fTKfN5Vt/5wr658Ku/dtGPHd2Y=
+github.com/joho/godotenv v1.5.1 h1:7eLL/+HRGLY0ldzfGMeQkb7vMd0as4CfYvUVzLqw0N0=
+github.com/joho/godotenv v1.5.1/go.mod h1:f4LDr5Voq0i2e/R5DDNOoa2zzDfwtkZa6DnEwAbqwq4=
+github.com/ochom/gutils v1.2.2 h1:bIuI9DLBmzjDBoRQWMMWITdPmiexEg8nVxdTZwllhAw=
+github.com/ochom/gutils v1.2.2/go.mod h1:FZc6vfCIfe77EGj0fLzFQWpL/xwUVmEMPGH7nHbtUKA=
 golang.org/x/crypto v0.9.0 h1:LF6fAI+IutBocDJ2OT0Q1g8plpYljMZ4+lty+dsqw3g=
 golang.org/x/crypto v0.9.0/go.mod h1:yrmDGqONDYtNj3tH8X9dzUun2m2lzPa9ngI6/RUPGR0=

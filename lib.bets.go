@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/ochom/gutils/env"
 	"github.com/ochom/gutils/gttp"
 	"github.com/ochom/gutils/helpers"
 	"github.com/ochom/gutils/logs"
@@ -11,7 +12,7 @@ import (
 
 // PlaceBet ...
 func PlaceBet(betSlip BetSlipRequest) (*BetSlipResponse, error) {
-	accessToken := helpers.GetEnv("BTOBET_ACCESS_TOKEN")
+	accessToken := env.Get("BTOBET_ACCESS_TOKEN")
 	headers := map[string]string{
 		"X-API-Key":    accessToken,
 		"Content-Type": "application/json",
@@ -25,7 +26,7 @@ func PlaceBet(betSlip BetSlipRequest) (*BetSlipResponse, error) {
 
 	betSlip.Mobile = mobile
 
-	logs.Info("placing bet [%s]=> %s", betSlip.Mobile, string(helpers.ToJSON(betSlip)))
+	logs.Info("placing bet [%s]=> %s", betSlip.Mobile, string(helpers.ToBytes(betSlip)))
 
 	res, err := gttp.Post(placeBetURL, headers, betSlip)
 	if err != nil {
@@ -38,13 +39,13 @@ func PlaceBet(betSlip BetSlipRequest) (*BetSlipResponse, error) {
 		return nil, fmt.Errorf("http status err: %v, %s", res.Status, string(res.Body))
 	}
 
-	data := helpers.FromJSON[BetSlipResponse](res.Body)
+	data := helpers.FromBytes[BetSlipResponse](res.Body)
 	return &data, nil
 }
 
 // CheckBetSlip ...
 func CheckBetSlip(mobile, slipID string) (*BetStatusResponse, error) {
-	accessToken := helpers.GetEnv("BTOBET_ACCESS_TOKEN")
+	accessToken := env.Get("BTOBET_ACCESS_TOKEN")
 	mobile, err := parseMobile(mobile)
 	if err != nil {
 		logs.Error("CheckBetSlip: error parsing mobile: %s", err.Error())
@@ -70,13 +71,13 @@ func CheckBetSlip(mobile, slipID string) (*BetStatusResponse, error) {
 		return nil, fmt.Errorf("request failed status %v", res.Status)
 	}
 
-	data := helpers.FromJSON[BetStatusResponse](res.Body)
+	data := helpers.FromBytes[BetStatusResponse](res.Body)
 	return &data, nil
 }
 
 // GetMarkets ...
 func GetMarkets(eventCode string) (*MarketResponse, error) {
-	accessToken := helpers.GetEnv("BTOBET_ACCESS_TOKEN")
+	accessToken := env.Get("BTOBET_ACCESS_TOKEN")
 	headers := map[string]string{
 		"X-API-Key": accessToken,
 		"Accept":    "application/json",
@@ -96,6 +97,6 @@ func GetMarkets(eventCode string) (*MarketResponse, error) {
 		return nil, fmt.Errorf("request failed status %v", res.Status)
 	}
 
-	data := helpers.FromJSON[MarketResponse](res.Body)
+	data := helpers.FromBytes[MarketResponse](res.Body)
 	return &data, nil
 }

@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/ochom/gutils/env"
 	"github.com/ochom/gutils/gttp"
 	"github.com/ochom/gutils/helpers"
 	"github.com/ochom/gutils/logs"
@@ -12,8 +13,8 @@ import (
 
 // AddPaymentAccount ...
 func AddPaymentAccount(mobile string) error {
-	paymentAPIKey := helpers.GetEnv("PAYMENTS_API_KEY")
-	paymentMethodID := helpers.GetEnvInt("PAYMENT_METHOD_ID", 0)
+	paymentAPIKey := env.Get("PAYMENTS_API_KEY")
+	paymentMethodID := env.Int("PAYMENT_METHOD_ID", 0)
 
 	mobile, err := parseMobile(mobile)
 	if err != nil {
@@ -49,7 +50,7 @@ func AddPaymentAccount(mobile string) error {
 		"Content-Type":  "application/json",
 	}
 
-	logs.Info("adding payment account [%s]=> %s", mobile, string(helpers.ToJSON(payload)))
+	logs.Info("adding payment account [%s]=> %s", mobile, string(helpers.ToBytes(payload)))
 	res, err := gttp.Post(addPaymentAccountURL, headers, payload)
 	if err != nil {
 		logs.Error("AddPaymentAccount: error adding payment account: %s", err.Error())
@@ -77,8 +78,8 @@ func WithdrawFromWallet(mobile, callbackURL string, amount int) error {
 		return err
 	}
 
-	paymentUsername := helpers.GetEnv("PAYMENTS_USERNAME")
-	paymentPassword := helpers.GetEnv("PAYMENTS_PASSWORD")
+	paymentUsername := env.Get("PAYMENTS_USERNAME")
+	paymentPassword := env.Get("PAYMENTS_PASSWORD")
 
 	apiKey := Encode(fmt.Sprintf("%s:%s", paymentUsername, paymentPassword))
 
@@ -100,7 +101,7 @@ func WithdrawFromWallet(mobile, callbackURL string, amount int) error {
 		"CallbackURL":  callbackURL,
 	}
 
-	logs.Info("withdrawing from wallet [%s]=> %s", mobile, string(helpers.ToJSON(payload)))
+	logs.Info("withdrawing from wallet [%s]=> %s", mobile, string(helpers.ToBytes(payload)))
 	res, err := gttp.Post(withdrawURL, headers, payload)
 	if err != nil {
 		logs.Error("WithdrawFromWallet: error withdrawing from wallet: %s", err.Error())
