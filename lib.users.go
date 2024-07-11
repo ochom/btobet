@@ -29,7 +29,6 @@ func GetCustomerDetails(mobile string) (*CustomerDetails, error) {
 		"phoneNumber": mobile,
 	}
 
-	logs.Error("getting customer details [%s]=> %s", mobile, string(helpers.ToBytes(payload)))
 	res, err := gttp.Post(getCustomerDetailsURL, headers, payload)
 	if err != nil {
 		logs.Error("error getting customer details [%s]=> %s", mobile, err.Error())
