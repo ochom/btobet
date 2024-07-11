@@ -13,15 +13,7 @@ import (
 
 // AddPaymentAccount ...
 func AddPaymentAccount(mobile string) error {
-	paymentAPIKey := env.Get("PAYMENTS_API_KEY")
-	paymentMethodID := env.Int("PAYMENT_METHOD_ID", 0)
-
-	mobile, err := parseMobile(mobile)
-	if err != nil {
-		logs.Error("AddPaymentAccount: error parsing mobile: %s", err.Error())
-		return err
-	}
-
+	mobile = BtoMobile(mobile)
 	customer, err := GetCustomerDetails(mobile)
 	if err != nil {
 		logs.Error("AddPaymentAccount: error getting customer details: %s", err.Error())
@@ -34,19 +26,19 @@ func AddPaymentAccount(mobile string) error {
 	}
 
 	payload := map[string]any{
-		"apiKey":     paymentAPIKey,
+		"apiKey":     env.Get("PAYMENTS_API_KEY"),
 		"internalID": customer.Customer.Account.InternalID,
 		"paymentAccounts": []map[string]any{
 			{
 				"AccountReference": mobile,
 				"HolderName":       mobile,
-				"PaymentMethodID":  paymentMethodID,
+				"PaymentMethodID":  env.Int("PAYMENT_METHOD_ID", 0),
 			},
 		},
 	}
 
 	headers := map[string]string{
-		"Authorization": fmt.Sprintf("Basic %s", paymentAPIKey),
+		"Authorization": fmt.Sprintf("Basic %s", payload["apiKey"]),
 		"Content-Type":  "application/json",
 	}
 
@@ -67,12 +59,7 @@ func AddPaymentAccount(mobile string) error {
 
 // WithdrawFromWallet ...
 func WithdrawFromWallet(mobile, callbackURL string, amount int) error {
-	mobile, err := parseMobile(mobile)
-	if err != nil {
-		logs.Error("WithdrawFromWallet: error parsing mobile: %s", err.Error())
-		return err
-	}
-
+	mobile = BtoMobile(mobile)
 	if err := AddPaymentAccount(mobile); err != nil {
 		logs.Error("WithdrawFromWallet: error adding payment account: %s", err.Error())
 		return err

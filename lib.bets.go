@@ -18,16 +18,7 @@ func PlaceBet(betSlip BetSlipRequest) (*BetSlipResponse, error) {
 		"Content-Type": "application/json",
 	}
 
-	mobile, err := parseMobile(betSlip.Mobile)
-	if err != nil {
-		logs.Error("PlaceBet: error parsing mobile: %s", err.Error())
-		return nil, err
-	}
-
-	betSlip.Mobile = mobile
-
-	logs.Info("placing bet [%s]=> %s", betSlip.Mobile, string(helpers.ToBytes(betSlip)))
-
+	betSlip.Mobile = BtoMobile(betSlip.Mobile)
 	res, err := gttp.Post(placeBetURL, headers, betSlip)
 	if err != nil {
 		logs.Error("error placing bet [%s]=> %s", betSlip.Mobile, err.Error())
@@ -46,18 +37,12 @@ func PlaceBet(betSlip BetSlipRequest) (*BetSlipResponse, error) {
 // CheckBetSlip ...
 func CheckBetSlip(mobile, slipID string) (*BetStatusResponse, error) {
 	accessToken := env.Get("BTOBET_ACCESS_TOKEN")
-	mobile, err := parseMobile(mobile)
-	if err != nil {
-		logs.Error("CheckBetSlip: error parsing mobile: %s", err.Error())
-		return nil, err
-	}
-
 	headers := map[string]string{
 		"X-API-Key":    accessToken,
 		"Content-Type": "application/json",
 	}
 
-	logs.Info("checking bet slip [%s]=> %s", mobile, slipID)
+	mobile = BtoMobile(mobile)
 
 	url := fmt.Sprintf(checkSlipURL, mobile, slipID)
 	res, err := gttp.Get(url, headers)

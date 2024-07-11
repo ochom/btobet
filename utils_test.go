@@ -2,41 +2,33 @@ package btobet
 
 import "testing"
 
-func Test_parseMobile(t *testing.T) {
+func Test_BtoMobile(t *testing.T) {
 	tests := []struct {
-		name    string
-		phone   string
-		want    string
-		wantErr bool
+		name  string
+		phone string
+		want  string
 	}{
 		{
-			name:    "happy 1",
-			phone:   "0708113456",
-			want:    "0708113456",
-			wantErr: false,
+			name:  "happy 1",
+			phone: "0708113456",
+			want:  "0708113456",
 		},
 		{
-			name:    "happy 2",
-			phone:   "254708113456",
-			want:    "0708113456",
-			wantErr: false,
+			name:  "happy 2",
+			phone: "254708113456",
+			want:  "0708113456",
 		},
 		{
-			name:    "sad 1",
-			phone:   "070811345",
-			want:    "",
-			wantErr: true,
+			name:  "sad 1",
+			phone: "070811345",
+			want:  "",
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := parseMobile(tt.phone)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("parseMobile() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
+			got := BtoMobile(tt.phone)
 			if got != tt.want {
-				t.Errorf("parseMobile() = %v, want %v", got, tt.want)
+				t.Errorf("BtoMobile() = %v, want %v", got, tt.want)
 			}
 		})
 	}

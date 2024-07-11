@@ -11,32 +11,25 @@ import (
 )
 
 // GetCustomerDetails ...
-func GetCustomerDetails(mobile string) (*CustomerDetails, error) {
-	paymentAPIKey := env.Get("PAYMENTS_API_KEY")
-
-	mobile, err := parseMobile(mobile)
-	if err != nil {
-		return nil, err
+func GetCustomerDetails(phone string) (*CustomerDetails, error) {
+	payload := map[string]string{
+		"apiKey":      env.Get("PAYMENTS_API_KEY"),
+		"phoneNumber": BtoMobile(phone),
 	}
 
 	headers := map[string]string{
-		"Authorization": fmt.Sprintf("Basic %s", paymentAPIKey),
+		"Authorization": fmt.Sprintf("Basic %s", payload["apiKey"]),
 		"Content-Type":  "application/json",
-	}
-
-	payload := map[string]string{
-		"apiKey":      paymentAPIKey,
-		"phoneNumber": mobile,
 	}
 
 	res, err := gttp.Post(getCustomerDetailsURL, headers, payload)
 	if err != nil {
-		logs.Error("error getting customer details [%s]=> %s", mobile, err.Error())
+		logs.Error("error getting customer details [%s]=> %s", payload["phoneNumber"], err.Error())
 		return nil, fmt.Errorf("http err : %v", err)
 	}
 
 	if res.Status != http.StatusOK {
-		logs.Error("error getting customer details [%s]=> %s", mobile, string(res.Body))
+		logs.Error("error getting customer details [%s]=> %s", payload["phoneNumber"], string(res.Body))
 		return nil, fmt.Errorf("http status err: %v", res.Status)
 	}
 
@@ -45,34 +38,25 @@ func GetCustomerDetails(mobile string) (*CustomerDetails, error) {
 }
 
 // GetCustomerMetadata ...
-func GetCustomerMetadata(mobile string) (map[string]any, error) {
-	paymentAPIKey := env.Get("PAYMENTS_API_KEY")
-
-	mobile, err := parseMobile(mobile)
-	if err != nil {
-		return nil, err
+func GetCustomerMetadata(phone string) (map[string]any, error) {
+	payload := map[string]string{
+		"apiKey":      env.Get("PAYMENTS_API_KEY"),
+		"phoneNumber": BtoMobile(phone),
 	}
 
 	headers := map[string]string{
-		"Authorization": fmt.Sprintf("Basic %s", paymentAPIKey),
+		"Authorization": fmt.Sprintf("Basic %s", payload["apiKey"]),
 		"Content-Type":  "application/json",
 	}
 
-	payload := map[string]string{
-		"apiKey":      paymentAPIKey,
-		"phoneNumber": mobile,
-	}
-
-	logs.Info("getting customer metadata [%s]=> %s", mobile, string(helpers.ToBytes(payload)))
-
 	res, err := gttp.Post(getCustomerDetailsURL, headers, payload)
 	if err != nil {
-		logs.Error("error getting customer metadata [%s]=> %s", mobile, err.Error())
+		logs.Error("error getting customer metadata [%s]=> %s", payload["phoneNumber"], err.Error())
 		return nil, fmt.Errorf("http err : %v", err)
 	}
 
 	if res.Status != http.StatusOK {
-		logs.Error("error getting customer metadata [%s]=> %s", mobile, string(res.Body))
+		logs.Error("error getting customer metadata [%s]=> %s", payload["phoneNumber"], string(res.Body))
 		return nil, fmt.Errorf("http status err: %v", res.Status)
 	}
 

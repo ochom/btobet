@@ -2,11 +2,11 @@ package btobet
 
 import (
 	"encoding/base64"
-	"fmt"
 	"strings"
 	"time"
 
 	"github.com/ochom/gutils/helpers"
+	"github.com/ochom/gutils/logs"
 )
 
 // TimeZone ...
@@ -27,13 +27,14 @@ func GetLocation() *time.Location {
 	return loc
 }
 
-func parseMobile(s string) (string, error) {
+func BtoMobile(s string) string {
 	mobile := helpers.ParseMobile(s)
 	if mobile == "" {
-		return "", fmt.Errorf("invalid mobile number")
+		logs.Error("invalid mobile number")
+		return ""
 	}
 
 	mobile = strings.TrimPrefix(mobile, "254")
 	mobile = "0" + mobile
-	return mobile, nil
+	return mobile
 }

@@ -11,13 +11,8 @@ import (
 )
 
 // RegisterUser ...
-func RegisterUser(mobile, password string) (*RegistrationResponse, error) {
-	paymentAPIKey := env.Get("PAYMENTS_API_KEY")
-
-	mobile, err := parseMobile(mobile)
-	if err != nil {
-		return nil, err
-	}
+func RegisterUser(phone, password string) (*RegistrationResponse, error) {
+	mobile := BtoMobile(phone)
 
 	payload := map[string]interface{}{
 		"customer": map[string]interface{}{
@@ -54,14 +49,14 @@ func RegisterUser(mobile, password string) (*RegistrationResponse, error) {
 			},
 		},
 		"deviceType":      "Default",
-		"apiKey":          paymentAPIKey,
+		"apiKey":          env.Get("PAYMENTS_API_KEY"),
 		"activateAccount": "true",
 		"loginAccount":    "false",
 	}
 
 	headers := map[string]string{
 		"Content-Type":  "application/json",
-		"Authorization": fmt.Sprintf("Basic %s", paymentAPIKey),
+		"Authorization": fmt.Sprintf("Basic %s", payload["apiKey"]),
 	}
 
 	logs.Info("registering user [%s]=> %s", mobile, string(helpers.ToBytes(payload)))
@@ -83,39 +78,30 @@ func RegisterUser(mobile, password string) (*RegistrationResponse, error) {
 
 // CustomerLogin ...
 func CustomerLogin(loginRequest LoginRequest) (*LoginResponse, error) {
-	paymentAPIKey := env.Get("PAYMENTS_API_KEY")
-
-	headers := map[string]string{
-		"Authorization": fmt.Sprintf("Basic %s", paymentAPIKey),
-		"Content-Type":  "application/json",
-	}
-
-	mobile, err := parseMobile(loginRequest.Username)
-	if err != nil {
-		return nil, err
-	}
-
 	payload := map[string]string{
-		"login":                   mobile,
+		"login":                   BtoMobile(loginRequest.Username),
 		"password":                loginRequest.Password,
 		"ipAddress":               loginRequest.IPaddress,
 		"returnBalance":           "true",
 		"returnApplicableBonuses": "true",
 		"returnCustomerDetails":   "true",
 		"deviceType":              "Default",
-		"apiKey":                  paymentAPIKey,
+		"apiKey":                  env.Get("PAYMENTS_API_KEY"),
 	}
 
-	logs.Info("logging in user [%s]=> %s", mobile, string(helpers.ToBytes(payload)))
+	headers := map[string]string{
+		"Authorization": fmt.Sprintf("Basic %s", payload["apiKey"]),
+		"Content-Type":  "application/json",
+	}
 
 	res, err := gttp.Post(loginURL, headers, payload)
 	if err != nil {
-		logs.Error("error logging in user [%s]=> %s", mobile, err.Error())
+		logs.Error("error logging in user [%s]=> %s", payload["login"], err.Error())
 		return nil, fmt.Errorf("http err : %v", err)
 	}
 
 	if res.Status != http.StatusOK {
-		logs.Error("error logging in user [%s]=> %s", mobile, string(res.Body))
+		logs.Error("error logging in user [%s]=> %s", payload["login"], string(res.Body))
 		return nil, fmt.Errorf("http status err: %v", res.Status)
 	}
 
