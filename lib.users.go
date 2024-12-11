@@ -22,15 +22,15 @@ func GetCustomerDetails(phone string) (*CustomerDetails, error) {
 		"Content-Type":  "application/json",
 	}
 
-	res, err := gttp.Post(getCustomerDetailsURL, headers, payload)
+	res, err := gttp.NewClient(gttp.GoFiber).Post(getCustomerDetailsURL, headers, payload)
 	if err != nil {
 		logs.Error("error getting customer details [%s]=> %s", payload["phoneNumber"], err.Error())
 		return nil, fmt.Errorf("http err : %v", err)
 	}
 
-	if res.Status != http.StatusOK {
+	if res.StatusCode != http.StatusOK {
 		logs.Error("error getting customer details [%s]=> %s", payload["phoneNumber"], string(res.Body))
-		return nil, fmt.Errorf("http status err: %v", res.Status)
+		return nil, fmt.Errorf("http status err: %v", res.StatusCode)
 	}
 
 	data := helpers.FromBytes[CustomerDetails](res.Body)
@@ -49,15 +49,15 @@ func GetCustomerMetadata(phone string) (map[string]any, error) {
 		"Content-Type":  "application/json",
 	}
 
-	res, err := gttp.Post(getCustomerDetailsURL, headers, payload)
+	res, err := gttp.NewClient(gttp.GoFiber).Post(getCustomerDetailsURL, headers, payload)
 	if err != nil {
 		logs.Error("error getting customer metadata [%s]=> %s", payload["phoneNumber"], err.Error())
 		return nil, fmt.Errorf("http err : %v", err)
 	}
 
-	if res.Status != http.StatusOK {
+	if res.StatusCode != http.StatusOK {
 		logs.Error("error getting customer metadata [%s]=> %s", payload["phoneNumber"], string(res.Body))
-		return nil, fmt.Errorf("http status err: %v", res.Status)
+		return nil, fmt.Errorf("http status err: %v", res.StatusCode)
 	}
 
 	data := helpers.FromBytes[map[string]any](res.Body)

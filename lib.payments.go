@@ -43,15 +43,15 @@ func AddPaymentAccount(mobile string) error {
 	}
 
 	logs.Info("adding payment account [%s]=> %s", mobile, string(helpers.ToBytes(payload)))
-	res, err := gttp.Post(addPaymentAccountURL, headers, payload)
+	res, err := gttp.NewClient(gttp.GoFiber).Post(addPaymentAccountURL, headers, payload)
 	if err != nil {
 		logs.Error("AddPaymentAccount: error adding payment account: %s", err.Error())
 		return err
 	}
 
-	if res.Status != http.StatusOK {
+	if res.StatusCode != http.StatusOK {
 		logs.Error("AddPaymentAccount: error adding payment account: %s", string(res.Body))
-		return fmt.Errorf("adding payment account failed status: %d", res.Status)
+		return fmt.Errorf("adding payment account failed status: %d", res.StatusCode)
 	}
 
 	return nil
@@ -89,15 +89,15 @@ func WithdrawFromWallet(mobile, callbackURL string, amount int) error {
 	}
 
 	logs.Info("withdrawing from wallet [%s]=> %s", mobile, string(helpers.ToBytes(payload)))
-	res, err := gttp.Post(withdrawURL, headers, payload)
+	res, err := gttp.NewClient(gttp.GoFiber).Post(withdrawURL, headers, payload)
 	if err != nil {
 		logs.Error("WithdrawFromWallet: error withdrawing from wallet: %s", err.Error())
 		return fmt.Errorf("http err : %v", err.Error())
 	}
 
-	if res.Status != http.StatusOK {
+	if res.StatusCode != http.StatusOK {
 		logs.Error("WithdrawFromWallet: error withdrawing from wallet: %s", string(res.Body))
-		return fmt.Errorf("withdrawal failed status: %d error: %s", res.Status, string(res.Body))
+		return fmt.Errorf("withdrawal failed status: %d error: %s", res.StatusCode, string(res.Body))
 	}
 
 	return nil

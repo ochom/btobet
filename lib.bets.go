@@ -19,15 +19,15 @@ func PlaceBet(betSlip BetSlipRequest) (*BetSlipResponse, error) {
 	}
 
 	betSlip.Mobile = BtoMobile(betSlip.Mobile)
-	res, err := gttp.Post(placeBetURL, headers, betSlip)
+	res, err := gttp.NewClient(gttp.GoFiber).Post(placeBetURL, headers, betSlip)
 	if err != nil {
 		logs.Error("error placing bet [%s]=> %s", betSlip.Mobile, err.Error())
 		return nil, fmt.Errorf("http err : %v", err)
 	}
 
-	if res.Status != http.StatusOK {
+	if res.StatusCode != http.StatusOK {
 		logs.Error("error placing bet [%s]=> %s", betSlip.Mobile, string(res.Body))
-		return nil, fmt.Errorf("http status err: %v, %s", res.Status, string(res.Body))
+		return nil, fmt.Errorf("http status err: %v, %s", res.StatusCode, string(res.Body))
 	}
 
 	data := helpers.FromBytes[BetSlipResponse](res.Body)
@@ -45,15 +45,15 @@ func CheckBetSlip(mobile, slipID string) (*BetStatusResponse, error) {
 	mobile = BtoMobile(mobile)
 
 	url := fmt.Sprintf(checkSlipURL, mobile, slipID)
-	res, err := gttp.Get(url, headers)
+	res, err := gttp.NewClient(gttp.GoFiber).Get(url, headers)
 	if err != nil {
 		logs.Error("error checking bet slip [%s]=> %s", mobile, err.Error())
 		return nil, err
 	}
 
-	if res.Status != http.StatusOK {
+	if res.StatusCode != http.StatusOK {
 		logs.Error("error checking bet slip [%s]=> %s", mobile, string(res.Body))
-		return nil, fmt.Errorf("request failed status %v", res.Status)
+		return nil, fmt.Errorf("request failed status %v", res.StatusCode)
 	}
 
 	data := helpers.FromBytes[BetStatusResponse](res.Body)
@@ -71,15 +71,15 @@ func GetMarkets(eventCode string) (*MarketResponse, error) {
 	logs.Info("getting markets [%s]=> %s", eventCode, accessToken)
 
 	url := fmt.Sprintf(getMarketsURL, eventCode)
-	res, err := gttp.Get(url, headers)
+	res, err := gttp.NewClient(gttp.GoFiber).Get(url, headers)
 	if err != nil {
 		logs.Error("error getting markets [%s]=> %s", eventCode, err.Error())
 		return nil, err
 	}
 
-	if res.Status != http.StatusOK {
+	if res.StatusCode != http.StatusOK {
 		logs.Error("error getting markets [%s]=> %s", eventCode, string(res.Body))
-		return nil, fmt.Errorf("request failed status %v", res.Status)
+		return nil, fmt.Errorf("request failed status %v", res.StatusCode)
 	}
 
 	data := helpers.FromBytes[MarketResponse](res.Body)
