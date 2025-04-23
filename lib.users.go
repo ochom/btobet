@@ -22,7 +22,7 @@ func GetCustomerDetails(phone string) (*CustomerDetails, error) {
 		"Content-Type":  "application/json",
 	}
 
-	res, err := gttp.NewClient(gttp.GoFiber).Post(getCustomerDetailsURL, headers, payload)
+	res, err := gttp.Post(getCustomerDetailsURL, headers, helpers.ToBytes(payload))
 	if err != nil {
 		logs.Error("error getting customer details [%s]=> %s", payload["phoneNumber"], err.Error())
 		return nil, fmt.Errorf("http err : %v", err)
@@ -49,7 +49,7 @@ func GetCustomerMetadata(phone string) (map[string]any, error) {
 		"Content-Type":  "application/json",
 	}
 
-	res, err := gttp.NewClient(gttp.GoFiber).Post(getCustomerDetailsURL, headers, payload)
+	res, err := gttp.Post(getCustomerDetailsURL, headers, helpers.ToBytes(payload))
 	if err != nil {
 		logs.Error("error getting customer metadata [%s]=> %s", payload["phoneNumber"], err.Error())
 		return nil, fmt.Errorf("http err : %v", err)

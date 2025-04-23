@@ -19,7 +19,7 @@ func PlaceBet(betSlip BetSlipRequest) (*BetSlipResponse, error) {
 	}
 
 	betSlip.Mobile = BtoMobile(betSlip.Mobile)
-	res, err := gttp.NewClient(gttp.GoFiber).Post(placeBetURL, headers, betSlip)
+	res, err := gttp.Post(placeBetURL, headers, helpers.ToBytes(betSlip))
 	if err != nil {
 		logs.Error("error placing bet [%s]=> %s", betSlip.Mobile, err.Error())
 		return nil, fmt.Errorf("http err : %v", err)
@@ -45,7 +45,7 @@ func CheckBetSlip(mobile, slipID string) (*BetStatusResponse, error) {
 	mobile = BtoMobile(mobile)
 
 	url := fmt.Sprintf(checkSlipURL, mobile, slipID)
-	res, err := gttp.NewClient(gttp.GoFiber).Get(url, headers)
+	res, err := gttp.Get(url, headers)
 	if err != nil {
 		logs.Error("error checking bet slip [%s]=> %s", mobile, err.Error())
 		return nil, err
@@ -71,7 +71,7 @@ func GetMarkets(eventCode string) (*MarketResponse, error) {
 	logs.Info("getting markets [%s]=> %s", eventCode, accessToken)
 
 	url := fmt.Sprintf(getMarketsURL, eventCode)
-	res, err := gttp.NewClient(gttp.GoFiber).Get(url, headers)
+	res, err := gttp.Get(url, headers)
 	if err != nil {
 		logs.Error("error getting markets [%s]=> %s", eventCode, err.Error())
 		return nil, err

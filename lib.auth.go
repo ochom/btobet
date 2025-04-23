@@ -61,7 +61,7 @@ func RegisterUser(phone, password string) (*RegistrationResponse, error) {
 
 	logs.Info("registering user [%s]=> %s", mobile, string(helpers.ToBytes(payload)))
 
-	res, err := gttp.NewClient(gttp.GoFiber).Post(registerCustomerURL, headers, payload)
+	res, err := gttp.Post(registerCustomerURL, headers, helpers.ToBytes(payload))
 	if err != nil {
 		logs.Error("error registering user [%s]=> %s", mobile, err.Error())
 		return nil, fmt.Errorf("http err : %v", err)
@@ -94,7 +94,7 @@ func CustomerLogin(loginRequest LoginRequest) (*LoginResponse, error) {
 		"Content-Type":  "application/json",
 	}
 
-	res, err := gttp.NewClient(gttp.GoFiber).Post(loginURL, headers, payload)
+	res, err := gttp.Post(loginURL, headers, helpers.ToBytes(payload))
 	if err != nil {
 		logs.Error("error logging in user [%s]=> %s", payload["login"], err.Error())
 		return nil, fmt.Errorf("http err : %v", err)

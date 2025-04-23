@@ -43,7 +43,7 @@ func AddPaymentAccount(mobile string) error {
 	}
 
 	logs.Info("adding payment account [%s]=> %s", mobile, string(helpers.ToBytes(payload)))
-	res, err := gttp.NewClient(gttp.GoFiber).Post(addPaymentAccountURL, headers, payload)
+	res, err := gttp.Post(addPaymentAccountURL, headers, helpers.ToBytes(payload))
 	if err != nil {
 		logs.Error("AddPaymentAccount: error adding payment account: %s", err.Error())
 		return err
@@ -89,7 +89,7 @@ func WithdrawFromWallet(mobile, callbackURL string, amount int) error {
 	}
 
 	logs.Info("withdrawing from wallet [%s]=> %s", mobile, string(helpers.ToBytes(payload)))
-	res, err := gttp.NewClient(gttp.GoFiber).Post(withdrawURL, headers, payload)
+	res, err := gttp.Post(withdrawURL, headers, helpers.ToBytes(payload))
 	if err != nil {
 		logs.Error("WithdrawFromWallet: error withdrawing from wallet: %s", err.Error())
 		return fmt.Errorf("http err : %v", err.Error())

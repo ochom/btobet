@@ -4,7 +4,7 @@ go 1.22
 
 toolchain go1.22.1
 
-require github.com/ochom/gutils v1.5.3
+require github.com/ochom/gutils v1.10.2
 
 require (
 	github.com/andybalholm/brotli v1.1.1 // indirect
