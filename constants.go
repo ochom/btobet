@@ -11,11 +11,3 @@ const (
 	checkSlipURL          = "https://sports-stm04-core.btobet.games/rest/smsbetting/CheckBetSlip?mobile=%s&betslipid=%s"
 	getMarketsURL         = "https://sports-stm04-core.btobet.games/rest/smsbetting/GetMarkets?eventCode=%s&culture=en"
 )
-
-// var (
-// 	paymentUsername = helpers.GetEnv("PAYMENTS_USERNAME", "")
-// 	paymentPassword = helpers.GetEnv("PAYMENTS_PASSWORD", "")
-// 	paymentAPIKey   = helpers.GetEnv("PAYMENTS_API_KEY", "")
-// 	accessToken     = helpers.GetEnv("BTOBET_ACCESS_TOKEN", "")
-// 	paymentMethodID = helpers.GetEnvInt("PAYMENT_METHOD_ID", 0)
-// )

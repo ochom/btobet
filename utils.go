@@ -2,12 +2,11 @@ package btobet
 
 import (
 	"encoding/base64"
-	"encoding/json"
-	"fmt"
+	"strings"
 	"time"
 
-	"github.com/ochom/gutils/gttp"
 	"github.com/ochom/gutils/helpers"
+	"github.com/ochom/gutils/logs"
 )
 
 // TimeZone ...
@@ -28,36 +27,14 @@ func GetLocation() *time.Location {
 	return loc
 }
 
-func parseMobile(s string) (string, error) {
+func BtoMobile(s string) string {
 	mobile := helpers.ParseMobile(s)
 	if mobile == "" {
-		return "", fmt.Errorf("invalid mobile number")
+		logs.Error("invalid mobile number")
+		return ""
 	}
 
-	// replace 254 with 0
-	mobile = fmt.Sprintf("0%s", mobile[3:])
-	return mobile, nil
-}
-
-// wrapRequest ...
-func wrapRequest(url string, headers map[string]string, payload any) (*gttp.Response, error) {
-	printable := map[string]interface{}{
-		"headers": headers,
-		"payload": payload,
-		"url":     url,
-	}
-
-	// print as json
-	b, err := json.MarshalIndent(printable, "", "  ")
-	if err != nil {
-		return nil, fmt.Errorf("json err : %v", err)
-	}
-
-	fmt.Printf("%s\n", string(b))
-	res, err := gttp.Post(url, headers, payload)
-	if err != nil {
-		return nil, fmt.Errorf("http err : %v", err)
-	}
-
-	return res, nil
+	mobile = strings.TrimPrefix(mobile, "254")
+	mobile = "0" + mobile
+	return mobile
 }
